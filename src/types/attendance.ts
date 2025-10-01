@@ -6,8 +6,16 @@ export interface Subject {
   totalClasses: number;
 }
 
-export interface AttendanceRecord {
-  date: Date;
+export interface TimetableEntry {
+  id: string;
+  day: string;
   subjectId: string;
+  time: string;
+}
+
+export interface AttendanceRecord {
+  date: string;
+  subjectId: string;
+  timetableEntryId: string;
   present: boolean;
 }

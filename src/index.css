@@ -161,6 +161,11 @@ All colors MUST be HSL.
     animation: fadeIn 0.5s ease-in-out;
   }
   
+  .touch-manipulation {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
   @keyframes fadeIn {
     from {
       opacity: 0;
@@ -170,5 +175,16 @@ All colors MUST be HSL.
       opacity: 1;
       transform: translateY(0);
     }
+  }
+}
+
+/* Mobile optimizations */
+@media (max-width: 640px) {
+  body {
+    font-size: 14px;
+  }
+  
+  input, button, select {
+    font-size: 16px; /* Prevents iOS zoom on input focus */
   }
 }
