@@ -9,7 +9,9 @@ import { EmptyState } from "@/components/EmptyState";
 import { useAttendance } from "@/hooks/useAttendance";
 import { ThemeProvider } from "next-themes";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, TableIcon, TrendingUp, Clock } from "lucide-react";
+import { Calendar, TableIcon, TrendingUp, Clock, MessageSquare } from "lucide-react";
+import { ChatTab } from "@/components/ChatTab";
+import { TimetableCodeDialog } from "@/components/TimetableCodeDialog";
 
 const Index = () => {
   const { 
@@ -23,6 +25,7 @@ const Index = () => {
     getMarkedToday,
     calculateOverallStats,
     getAttendanceDates,
+    importTimetable,
   } = useAttendance();
 
   const stats = calculateOverallStats();
@@ -65,11 +68,14 @@ const Index = () => {
                 Track your attendance and stay motivated
               </p>
             </div>
-            <AddSubjectDialog onAddSubject={addSubject} />
+            <div className="flex gap-2">
+              <TimetableCodeDialog timetable={timetable} onImportTimetable={importTimetable} />
+              <AddSubjectDialog onAddSubject={addSubject} />
+            </div>
           </div>
 
           <Tabs defaultValue="today" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4 h-auto">
+            <TabsList className="grid w-full grid-cols-5 h-auto">
               <TabsTrigger value="today" className="text-xs sm:text-sm py-2 sm:py-2.5">
                 <Clock className="h-4 w-4 mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Today</span>
@@ -85,6 +91,10 @@ const Index = () => {
               <TabsTrigger value="calendar" className="text-xs sm:text-sm py-2 sm:py-2.5">
                 <Calendar className="h-4 w-4 mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Calendar</span>
+              </TabsTrigger>
+              <TabsTrigger value="chat" className="text-xs sm:text-sm py-2 sm:py-2.5">
+                <MessageSquare className="h-4 w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Chat</span>
               </TabsTrigger>
             </TabsList>
 
@@ -113,6 +123,10 @@ const Index = () => {
 
             <TabsContent value="calendar" className="space-y-6">
               <AttendanceCalendar attendanceDates={attendanceDates} />
+            </TabsContent>
+
+            <TabsContent value="chat" className="space-y-6">
+              <ChatTab subjects={subjects} timetable={timetable} />
             </TabsContent>
           </Tabs>
         </main>

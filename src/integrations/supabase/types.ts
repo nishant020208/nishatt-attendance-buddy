@@ -14,7 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      timetable_codes: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          timetable_data: Json
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          timetable_data: Json
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          timetable_data?: Json
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

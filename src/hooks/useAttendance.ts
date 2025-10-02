@@ -155,6 +155,12 @@ export const useAttendance = () => {
       .map(record => new Date(record.date));
   };
 
+  const importTimetable = (importedTimetable: TimetableEntry[]) => {
+    const updated = [...timetable, ...importedTimetable];
+    setTimetable(updated);
+    localStorage.setItem(TIMETABLE_KEY, JSON.stringify(updated));
+  };
+
   return {
     subjects,
     timetable,
@@ -166,5 +172,6 @@ export const useAttendance = () => {
     getMarkedToday,
     calculateOverallStats,
     getAttendanceDates,
+    importTimetable,
   };
 };
