@@ -45,7 +45,7 @@ export const AttendanceReminder = ({ markedToday, todayTimetableCount }: Attenda
 
   return (
     <div 
-      className="fixed bottom-20 left-4 z-50 max-w-xs animate-in fade-in slide-in-from-bottom-4"
+      className="fixed bottom-20 right-4 z-50 max-w-xs animate-in fade-in slide-in-from-bottom-4"
       style={{
         backgroundColor: 'hsl(var(--card))',
         border: '2px solid hsl(var(--primary))',

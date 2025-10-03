@@ -184,7 +184,7 @@ export const useAttendance = () => {
     localStorage.setItem(TIMETABLE_KEY, JSON.stringify(updated));
   };
 
-  const editAttendance = (subjectId: string, timetableEntryId: string, date: string, newPresent: boolean) => {
+  const editAttendance = (subjectId: string, timetableEntryId: string, date: string, newPresent: boolean | null) => {
     const recordIndex = attendanceRecords.findIndex(
       r => r.subjectId === subjectId && r.timetableEntryId === timetableEntryId && r.date === date
     );
@@ -200,16 +200,27 @@ export const useAttendance = () => {
     const updatedSubjects = subjects.map(subject => {
       if (subject.id === subjectId) {
         let attended = subject.attended;
-        if (oldPresent && !newPresent) attended--;
-        if (!oldPresent && newPresent) attended++;
-        return { ...subject, attended };
+        let totalClasses = subject.totalClasses;
+        
+        // Handle state transitions
+        if (oldPresent === true && newPresent !== true) attended--;
+        if (oldPresent !== true && newPresent === true) attended++;
+        if (oldPresent === null && newPresent !== null) totalClasses++;
+        if (oldPresent !== null && newPresent === null) {
+          totalClasses--;
+          if (oldPresent === true) attended--;
+        }
+        
+        return { ...subject, attended, totalClasses };
       }
       return subject;
     });
 
     setSubjects(updatedSubjects);
     localStorage.setItem(SUBJECTS_KEY, JSON.stringify(updatedSubjects));
-    toast.success("Attendance updated");
+    
+    const statusText = newPresent === true ? "present" : newPresent === false ? "absent" : "off";
+    toast.success(`Attendance marked as ${statusText}`);
   };
 
   return {

@@ -17,5 +17,5 @@ export interface AttendanceRecord {
   date: string;
   subjectId: string;
   timetableEntryId: string;
-  present: boolean;
+  present: boolean | null;
 }

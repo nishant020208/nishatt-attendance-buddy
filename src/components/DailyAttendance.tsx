@@ -1,20 +1,23 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, XCircle, Calendar } from "lucide-react";
-import { Subject, TimetableEntry } from "@/types/attendance";
+import { CheckCircle, XCircle, Calendar, MinusCircle } from "lucide-react";
+import { Subject, TimetableEntry, AttendanceRecord } from "@/types/attendance";
 import { format } from "date-fns";
 
 interface DailyAttendanceProps {
   subjects: Subject[];
   todayTimetable: TimetableEntry[];
   onMarkAttendance: (subjectId: string, present: boolean) => void;
+  onEditAttendance: (subjectId: string, timetableEntryId: string, date: string, newPresent: boolean | null) => void;
   markedToday: string[];
+  attendanceRecords: AttendanceRecord[];
 }
 
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-export const DailyAttendance = ({ subjects, todayTimetable, onMarkAttendance, markedToday }: DailyAttendanceProps) => {
+export const DailyAttendance = ({ subjects, todayTimetable, onMarkAttendance, onEditAttendance, markedToday, attendanceRecords }: DailyAttendanceProps) => {
   const today = format(new Date(), "EEEE");
+  const todayDate = format(new Date(), "yyyy-MM-dd");
   const sortedTimetable = todayTimetable.sort((a, b) => a.time.localeCompare(b.time));
 
   if (sortedTimetable.length === 0) {
@@ -40,14 +43,22 @@ export const DailyAttendance = ({ subjects, todayTimetable, onMarkAttendance, ma
         {sortedTimetable.map(entry => {
           const subject = subjects.find(s => s.id === entry.subjectId);
           const isMarked = markedToday.includes(entry.id);
+          const record = attendanceRecords.find(r => r.timetableEntryId === entry.id && r.date === todayDate);
+          
+          const getStatusDisplay = () => {
+            if (!record) return null;
+            if (record.present === true) return { icon: CheckCircle, text: "Present", color: "text-success", bgColor: "border-success bg-success/5" };
+            if (record.present === false) return { icon: XCircle, text: "Absent", color: "text-destructive", bgColor: "border-destructive bg-destructive/5" };
+            return { icon: MinusCircle, text: "Off", color: "text-muted-foreground", bgColor: "border-border bg-muted/5" };
+          };
+
+          const status = getStatusDisplay();
 
           return (
             <div
               key={entry.id}
               className={`p-4 rounded-lg border-2 transition-all ${
-                isMarked 
-                  ? 'border-success bg-success/5' 
-                  : 'border-border bg-card'
+                status ? status.bgColor : 'border-border bg-card'
               }`}
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -60,32 +71,56 @@ export const DailyAttendance = ({ subjects, todayTimetable, onMarkAttendance, ma
                   </div>
                 </div>
 
-                {isMarked ? (
-                  <div className="flex items-center gap-2 text-success">
-                    <CheckCircle className="h-4 w-4" />
-                    <span className="text-sm font-medium">Marked</span>
-                  </div>
-                ) : (
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={() => onMarkAttendance(entry.subjectId, true)}
-                      className="flex-1 sm:flex-none bg-success hover:bg-success/90"
-                      size="sm"
-                    >
-                      <CheckCircle className="h-4 w-4 mr-1" />
-                      Present
-                    </Button>
-                    <Button
-                      onClick={() => onMarkAttendance(entry.subjectId, false)}
-                      variant="outline"
-                      className="flex-1 sm:flex-none border-destructive/50 text-destructive hover:bg-destructive/10"
-                      size="sm"
-                    >
-                      <XCircle className="h-4 w-4 mr-1" />
-                      Absent
-                    </Button>
-                  </div>
-                )}
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => isMarked 
+                      ? onEditAttendance(entry.subjectId, entry.id, todayDate, true)
+                      : onMarkAttendance(entry.subjectId, true)
+                    }
+                    className={`flex-1 sm:flex-none ${
+                      record?.present === true 
+                        ? 'bg-success hover:bg-success/90' 
+                        : 'bg-success/20 hover:bg-success/30'
+                    }`}
+                    size="sm"
+                    variant={record?.present === true ? "default" : "outline"}
+                  >
+                    <CheckCircle className="h-4 w-4 mr-1" />
+                    Present
+                  </Button>
+                  <Button
+                    onClick={() => isMarked 
+                      ? onEditAttendance(entry.subjectId, entry.id, todayDate, false)
+                      : onMarkAttendance(entry.subjectId, false)
+                    }
+                    className={`flex-1 sm:flex-none ${
+                      record?.present === false 
+                        ? 'border-destructive bg-destructive text-destructive-foreground hover:bg-destructive/90' 
+                        : 'border-destructive/50 text-destructive hover:bg-destructive/10'
+                    }`}
+                    variant="outline"
+                    size="sm"
+                  >
+                    <XCircle className="h-4 w-4 mr-1" />
+                    Absent
+                  </Button>
+                  <Button
+                    onClick={() => isMarked 
+                      ? onEditAttendance(entry.subjectId, entry.id, todayDate, null)
+                      : onMarkAttendance(entry.subjectId, false)
+                    }
+                    className={`flex-1 sm:flex-none ${
+                      record && record.present === null
+                        ? 'bg-muted hover:bg-muted/80' 
+                        : 'hover:bg-muted/50'
+                    }`}
+                    variant="outline"
+                    size="sm"
+                  >
+                    <MinusCircle className="h-4 w-4 mr-1" />
+                    Off
+                  </Button>
+                </div>
               </div>
             </div>
           );

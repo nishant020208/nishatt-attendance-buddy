@@ -23,6 +23,7 @@ const Index = () => {
     addToTimetable,
     removeFromTimetable,
     markAttendance,
+    editAttendance,
     getTodayTimetable,
     getMarkedToday,
     calculateOverallStats,
@@ -103,16 +104,20 @@ const Index = () => {
                 subjects={subjects}
                 todayTimetable={todayTimetable}
                 onMarkAttendance={markAttendance}
+                onEditAttendance={editAttendance}
                 markedToday={markedToday}
+                attendanceRecords={attendanceRecords}
               />
             </TabsContent>
 
             <TabsContent value="stats" className="space-y-6">
               <OverallStats {...stats} />
               <div className="space-y-6">
-                {subjects.map(subject => (
-                  <SubjectStats key={subject.id} subject={subject} />
-                ))}
+                {subjects
+                  .filter(subject => timetable.some(t => t.subjectId === subject.id))
+                  .map(subject => (
+                    <SubjectStats key={subject.id} subject={subject} />
+                  ))}
               </div>
             </TabsContent>
 
