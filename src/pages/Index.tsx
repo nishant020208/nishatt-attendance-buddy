@@ -1,11 +1,12 @@
 import { DashboardHeader } from "@/components/DashboardHeader";
 import { OverallStats } from "@/components/OverallStats";
-import { AttendanceChart } from "@/components/AttendanceChart";
+import { SubjectStats } from "@/components/SubjectStats";
 import { AttendanceCalendar } from "@/components/AttendanceCalendar";
 import { AddSubjectDialog } from "@/components/AddSubjectDialog";
 import { TimetableView } from "@/components/TimetableView";
 import { DailyAttendance } from "@/components/DailyAttendance";
 import { EmptyState } from "@/components/EmptyState";
+import { AttendanceReminder } from "@/components/AttendanceReminder";
 import { useAttendance } from "@/hooks/useAttendance";
 import { ThemeProvider } from "next-themes";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,6 +18,7 @@ const Index = () => {
   const { 
     subjects,
     timetable,
+    attendanceRecords,
     addSubject,
     addToTimetable,
     removeFromTimetable,
@@ -24,12 +26,10 @@ const Index = () => {
     getTodayTimetable,
     getMarkedToday,
     calculateOverallStats,
-    getAttendanceDates,
     importTimetable,
   } = useAttendance();
 
   const stats = calculateOverallStats();
-  const attendanceDates = getAttendanceDates();
   const todayTimetable = getTodayTimetable();
   const markedToday = getMarkedToday();
 
@@ -109,7 +109,11 @@ const Index = () => {
 
             <TabsContent value="stats" className="space-y-6">
               <OverallStats {...stats} />
-              <AttendanceChart subjects={subjects} />
+              <div className="space-y-6">
+                {subjects.map(subject => (
+                  <SubjectStats key={subject.id} subject={subject} />
+                ))}
+              </div>
             </TabsContent>
 
             <TabsContent value="timetable" className="space-y-6">
@@ -122,7 +126,7 @@ const Index = () => {
             </TabsContent>
 
             <TabsContent value="calendar" className="space-y-6">
-              <AttendanceCalendar attendanceDates={attendanceDates} />
+              <AttendanceCalendar attendanceRecords={attendanceRecords} subjects={subjects} />
             </TabsContent>
 
             <TabsContent value="chat" className="space-y-6">
@@ -130,6 +134,11 @@ const Index = () => {
             </TabsContent>
           </Tabs>
         </main>
+
+        <AttendanceReminder 
+          markedToday={markedToday} 
+          todayTimetableCount={todayTimetable.length} 
+        />
       </div>
     </ThemeProvider>
   );

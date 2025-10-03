@@ -51,9 +51,32 @@ export const useAttendance = () => {
   };
 
   const removeFromTimetable = (id: string) => {
+    const entry = timetable.find(e => e.id === id);
     const updated = timetable.filter(entry => entry.id !== id);
     setTimetable(updated);
     localStorage.setItem(TIMETABLE_KEY, JSON.stringify(updated));
+
+    // Check if this was the last timetable entry for this subject
+    if (entry) {
+      const hasOtherEntries = updated.some(e => e.subjectId === entry.subjectId);
+      
+      if (!hasOtherEntries) {
+        // Remove all attendance records for this subject
+        const updatedRecords = attendanceRecords.filter(r => r.subjectId !== entry.subjectId);
+        setAttendanceRecords(updatedRecords);
+        localStorage.setItem(ATTENDANCE_KEY, JSON.stringify(updatedRecords));
+
+        // Reset subject attendance
+        const updatedSubjects = subjects.map(s => 
+          s.id === entry.subjectId 
+            ? { ...s, attended: 0, totalClasses: 0 }
+            : s
+        );
+        setSubjects(updatedSubjects);
+        localStorage.setItem(SUBJECTS_KEY, JSON.stringify(updatedSubjects));
+      }
+    }
+
     toast.success("Removed from timetable");
   };
 
@@ -161,17 +184,46 @@ export const useAttendance = () => {
     localStorage.setItem(TIMETABLE_KEY, JSON.stringify(updated));
   };
 
+  const editAttendance = (subjectId: string, timetableEntryId: string, date: string, newPresent: boolean) => {
+    const recordIndex = attendanceRecords.findIndex(
+      r => r.subjectId === subjectId && r.timetableEntryId === timetableEntryId && r.date === date
+    );
+
+    if (recordIndex === -1) return;
+
+    const oldPresent = attendanceRecords[recordIndex].present;
+    const updatedRecords = [...attendanceRecords];
+    updatedRecords[recordIndex] = { ...updatedRecords[recordIndex], present: newPresent };
+    setAttendanceRecords(updatedRecords);
+    localStorage.setItem(ATTENDANCE_KEY, JSON.stringify(updatedRecords));
+
+    const updatedSubjects = subjects.map(subject => {
+      if (subject.id === subjectId) {
+        let attended = subject.attended;
+        if (oldPresent && !newPresent) attended--;
+        if (!oldPresent && newPresent) attended++;
+        return { ...subject, attended };
+      }
+      return subject;
+    });
+
+    setSubjects(updatedSubjects);
+    localStorage.setItem(SUBJECTS_KEY, JSON.stringify(updatedSubjects));
+    toast.success("Attendance updated");
+  };
+
   return {
     subjects,
     timetable,
+    attendanceRecords,
     addSubject,
     addToTimetable,
     removeFromTimetable,
     markAttendance,
+    editAttendance,
     getTodayTimetable,
     getMarkedToday,
     calculateOverallStats,
-    getAttendanceDates,
     importTimetable,
   };
 };
