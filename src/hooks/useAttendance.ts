@@ -22,6 +22,12 @@ export const useAttendance = () => {
     if (savedAttendance) setAttendanceRecords(JSON.parse(savedAttendance));
   }, []);
 
+  const deleteSubject = (id: string) => {
+    setSubjects(subjects.filter(s => s.id !== id));
+    setTimetable(timetable.filter(t => t.subjectId !== id));
+    setAttendanceRecords(attendanceRecords.filter(r => r.subjectId !== id));
+  };
+
   const addSubject = (name: string, code: string) => {
     const newSubject: Subject = {
       id: Date.now().toString(),
@@ -228,6 +234,7 @@ export const useAttendance = () => {
     timetable,
     attendanceRecords,
     addSubject,
+    deleteSubject,
     addToTimetable,
     removeFromTimetable,
     markAttendance,

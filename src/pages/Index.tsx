@@ -6,13 +6,13 @@ import { AddSubjectDialog } from "@/components/AddSubjectDialog";
 import { TimetableView } from "@/components/TimetableView";
 import { DailyAttendance } from "@/components/DailyAttendance";
 import { EmptyState } from "@/components/EmptyState";
-import { AttendanceReminder } from "@/components/AttendanceReminder";
 import { useAttendance } from "@/hooks/useAttendance";
 import { ThemeProvider } from "next-themes";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, TableIcon, TrendingUp, Clock, MessageSquare } from "lucide-react";
+import { Calendar, TableIcon, TrendingUp, Clock, MessageSquare, Database } from "lucide-react";
 import { ChatTab } from "@/components/ChatTab";
 import { TimetableCodeDialog } from "@/components/TimetableCodeDialog";
+import { SubjectManagement } from "@/components/SubjectManagement";
 
 const Index = () => {
   const { 
@@ -20,6 +20,7 @@ const Index = () => {
     timetable,
     attendanceRecords,
     addSubject,
+    deleteSubject,
     addToTimetable,
     removeFromTimetable,
     markAttendance,
@@ -58,7 +59,7 @@ const Index = () => {
 
   return (
     <ThemeProvider attribute="class" defaultTheme="light">
-      <div className="min-h-screen bg-background pb-20 sm:pb-8">
+      <div className="min-h-screen bg-background gradient-mesh pb-20 sm:pb-8">
         <DashboardHeader />
         
         <main className="container mx-auto px-4 py-6 sm:py-8">
@@ -76,7 +77,7 @@ const Index = () => {
           </div>
 
           <Tabs defaultValue="today" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5 h-auto">
+            <TabsList className="grid w-full grid-cols-6 h-auto">
               <TabsTrigger value="today" className="text-xs sm:text-sm py-2 sm:py-2.5">
                 <Clock className="h-4 w-4 mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Today</span>
@@ -92,6 +93,10 @@ const Index = () => {
               <TabsTrigger value="calendar" className="text-xs sm:text-sm py-2 sm:py-2.5">
                 <Calendar className="h-4 w-4 mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Calendar</span>
+              </TabsTrigger>
+              <TabsTrigger value="subjects" className="text-xs sm:text-sm py-2 sm:py-2.5">
+                <Database className="h-4 w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Subjects</span>
               </TabsTrigger>
               <TabsTrigger value="chat" className="text-xs sm:text-sm py-2 sm:py-2.5">
                 <MessageSquare className="h-4 w-4 mr-1 sm:mr-2" />
@@ -134,16 +139,19 @@ const Index = () => {
               <AttendanceCalendar attendanceRecords={attendanceRecords} subjects={subjects} />
             </TabsContent>
 
+            <TabsContent value="subjects" className="space-y-6">
+              <SubjectManagement 
+                subjects={subjects}
+                onAddSubject={addSubject}
+                onDeleteSubject={deleteSubject}
+              />
+            </TabsContent>
+
             <TabsContent value="chat" className="space-y-6">
               <ChatTab subjects={subjects} timetable={timetable} />
             </TabsContent>
           </Tabs>
         </main>
-
-        <AttendanceReminder 
-          markedToday={markedToday} 
-          todayTimetableCount={todayTimetable.length} 
-        />
       </div>
     </ThemeProvider>
   );
