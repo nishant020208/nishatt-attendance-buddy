@@ -41,14 +41,17 @@ const Index = () => {
         <div className="min-h-screen bg-background">
           <DashboardHeader />
           <main className="container mx-auto px-4 py-8">
-            <div className="mb-6 flex justify-between items-center">
+            <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
                 <h2 className="text-2xl sm:text-3xl font-bold mb-2">Get Started</h2>
                 <p className="text-sm sm:text-base text-muted-foreground">
-                  Add your first subject to begin tracking
+                  Add your first subject or import a timetable to begin tracking
                 </p>
               </div>
-              <AddSubjectDialog onAddSubject={addSubject} />
+              <div className="flex gap-2">
+                <TimetableCodeDialog timetable={timetable} onImportTimetable={importTimetable} />
+                <AddSubjectDialog onAddSubject={addSubject} />
+              </div>
             </div>
             <EmptyState />
           </main>

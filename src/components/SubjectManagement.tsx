@@ -81,10 +81,10 @@ export const SubjectManagement = ({ subjects, onAddSubject, onDeleteSubject }: S
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="subject-code" className="text-sm font-semibold">Subject Code</Label>
+                <Label htmlFor="subject-code" className="text-sm font-semibold">Sr No</Label>
                 <Input
                   id="subject-code"
-                  placeholder="e.g., CS201"
+                  placeholder="e.g., 1"
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
                   className="border-primary/30 focus-visible:ring-primary"
@@ -126,7 +126,7 @@ export const SubjectManagement = ({ subjects, onAddSubject, onDeleteSubject }: S
                   <div className="space-y-1">
                     <h3 className="font-semibold text-lg">{subject.name}</h3>
                     <p className="text-sm text-muted-foreground font-mono">
-                      Code: {subject.code}
+                      Sr No: {subject.code}
                     </p>
                     <div className="flex gap-4 text-xs text-muted-foreground">
                       <span className="font-mono">

@@ -54,10 +54,10 @@ export const AddSubjectDialog = ({ onAddSubject }: AddSubjectDialogProps) => {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="code">Subject Code</Label>
+            <Label htmlFor="code">Sr No</Label>
             <Input
               id="code"
-              placeholder="e.g., CS201"
+              placeholder="e.g., 1"
               value={code}
               onChange={(e) => setCode(e.target.value)}
               className="touch-manipulation"
