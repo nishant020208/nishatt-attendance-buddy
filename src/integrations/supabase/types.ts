@@ -14,24 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       timetable_codes: {
         Row: {
           code: string
           created_at: string
           id: string
           timetable_data: Json
+          user_id: string | null
         }
         Insert: {
           code: string
           created_at?: string
           id?: string
           timetable_data: Json
+          user_id?: string | null
         }
         Update: {
           code?: string
           created_at?: string
           id?: string
           timetable_data?: Json
+          user_id?: string | null
         }
         Relationships: []
       }
