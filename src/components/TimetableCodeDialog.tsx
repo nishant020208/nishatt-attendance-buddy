@@ -32,6 +32,17 @@ export const TimetableCodeDialog = ({ timetable, onImportTimetable }: TimetableC
 
     setIsGenerating(true);
     try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Not authenticated",
+          description: "Please sign in to generate codes",
+          variant: "destructive"
+        });
+        return;
+      }
+
       // Generate a random 6-character code
       const code = Math.random().toString(36).substring(2, 8).toUpperCase();
       
@@ -39,7 +50,8 @@ export const TimetableCodeDialog = ({ timetable, onImportTimetable }: TimetableC
         .from('timetable_codes')
         .insert({
           code,
-          timetable_data: timetable
+          timetable_data: timetable,
+          user_id: user.id
         });
 
       if (error) throw error;
