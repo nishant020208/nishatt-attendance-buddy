@@ -175,12 +175,13 @@ const Index = () => {
             </TabsContent>
 
             <TabsContent value="timetable" className="space-y-6">
-              <TimetableView
-                subjects={subjects}
-                timetable={timetable}
-                onAddToTimetable={addToTimetable}
-                onRemoveFromTimetable={removeFromTimetable}
-              />
+            <TimetableView 
+              subjects={subjects}
+              timetable={timetable}
+              onAddToTimetable={addToTimetable}
+              onRemoveFromTimetable={removeFromTimetable}
+              onAddSubject={addSubject}
+            />
             </TabsContent>
 
             <TabsContent value="calendar" className="space-y-6">

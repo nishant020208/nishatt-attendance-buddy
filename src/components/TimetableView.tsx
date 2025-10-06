@@ -5,17 +5,19 @@ import { Subject, TimetableEntry } from "@/types/attendance";
 import { Plus, Trash2, Clock } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { TimetableImageUpload } from "./TimetableImageUpload";
 
 interface TimetableViewProps {
   subjects: Subject[];
   timetable: TimetableEntry[];
   onAddToTimetable: (day: string, subjectId: string, time: string) => void;
   onRemoveFromTimetable: (id: string) => void;
+  onAddSubject: (name: string, code: string) => void;
 }
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-export const TimetableView = ({ subjects, timetable, onAddToTimetable, onRemoveFromTimetable }: TimetableViewProps) => {
+export const TimetableView = ({ subjects, timetable, onAddToTimetable, onRemoveFromTimetable, onAddSubject }: TimetableViewProps) => {
   const [selectedDay, setSelectedDay] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("");
   const [time, setTime] = useState("");
@@ -38,8 +40,36 @@ export const TimetableView = ({ subjects, timetable, onAddToTimetable, onRemoveF
       .sort((a, b) => a.time.localeCompare(b.time));
   };
 
+  const handleSubjectsExtracted = (extractedSubjects: { name: string; code: string }[]) => {
+    extractedSubjects.forEach(subject => {
+      const exists = subjects.find(s => s.code.toLowerCase() === subject.code.toLowerCase());
+      if (!exists) {
+        onAddSubject(subject.name, subject.code);
+      }
+    });
+  };
+
+  const handleTimetableExtracted = (entries: { day: string; subjectCode: string; time: string }[]) => {
+    entries.forEach(entry => {
+      const subject = subjects.find(s => s.code.toLowerCase() === entry.subjectCode.toLowerCase());
+      if (subject) {
+        const duplicate = timetable.find(
+          t => t.day === entry.day && t.subjectId === subject.id && t.time === entry.time
+        );
+        if (!duplicate) {
+          onAddToTimetable(entry.day, subject.id, entry.time);
+        }
+      }
+    });
+  };
+
   return (
     <div className="space-y-6">
+      <TimetableImageUpload 
+        subjects={subjects}
+        onSubjectsExtracted={handleSubjectsExtracted}
+        onTimetableExtracted={handleTimetableExtracted}
+      />
       <Card className="p-4 sm:p-6 gradient-card border-0 shadow-lg">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Clock className="h-5 w-5 text-primary" />
