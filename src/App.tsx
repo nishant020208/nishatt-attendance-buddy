@@ -13,22 +13,55 @@ const queryClient = new QueryClient();
 const App = () => {
   useEffect(() => {
     const clickBadgeClose = () => {
-      const badge = document.querySelector('[data-lovable-badge]') || 
-                    document.querySelector('a[href*="lovable.dev"]')?.closest('div');
-      
-      if (badge) {
-        const closeButton = badge.querySelector('button') || 
-                          badge.querySelector('[role="button"]') ||
-                          badge.querySelector('svg')?.closest('button');
-        
-        if (closeButton) {
-          (closeButton as HTMLElement).click();
-        }
+      // Multiple selector strategies
+      const selectors = [
+        '[data-lovable-badge]',
+        'a[href*="lovable"]',
+        'a[href*="lovable.dev"]',
+        'div[class*="lovable"]',
+        'div[class*="badge"]'
+      ];
+
+      for (const selector of selectors) {
+        const elements = document.querySelectorAll(selector);
+        elements.forEach(element => {
+          // Try to find and click close button
+          const closeBtn = element.querySelector('button') ||
+                          element.querySelector('[aria-label*="close"]') ||
+                          element.querySelector('[aria-label*="Close"]') ||
+                          element.querySelector('svg')?.parentElement as HTMLElement;
+          
+          if (closeBtn && closeBtn.tagName === 'BUTTON') {
+            closeBtn.click();
+          }
+
+          // Try to hide the badge directly
+          const badgeElement = element.closest('div') as HTMLElement;
+          if (badgeElement) {
+            badgeElement.style.display = 'none';
+            badgeElement.style.visibility = 'hidden';
+            badgeElement.style.opacity = '0';
+            badgeElement.style.pointerEvents = 'none';
+          }
+        });
       }
+
+      // Also try to find and hide any iframe or container with lovable
+      const iframes = document.querySelectorAll('iframe');
+      iframes.forEach(iframe => {
+        if (iframe.src?.includes('lovable') || iframe.id?.includes('lovable')) {
+          (iframe as HTMLElement).style.display = 'none';
+        }
+      });
     };
 
-    const interval = setInterval(clickBadgeClose, 100);
+    // Run immediately
+    clickBadgeClose();
+
+    // Run every 50ms for aggressive removal
+    const interval = setInterval(clickBadgeClose, 50);
     
+    // Watch for DOM changes
     const observer = new MutationObserver(() => {
       clickBadgeClose();
     });
