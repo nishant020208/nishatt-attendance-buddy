@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Upload, Image as ImageIcon, Loader2 } from "lucide-react";
+import { Upload, Image as ImageIcon, Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Subject, TimetableEntry } from "@/types/attendance";
@@ -19,6 +19,10 @@ export const TimetableImageUpload = ({
 }: TimetableImageUploadProps) => {
   const [isUploading, setIsUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [extractedData, setExtractedData] = useState<{
+    subjects: { name: string; code: string }[];
+    timetable: { day: string; subjectCode: string; time: string }[];
+  } | null>(null);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -68,23 +72,17 @@ export const TimetableImageUpload = ({
             return;
           }
 
-          // Add subjects first
-          if (newSubjects.length > 0) {
-            onSubjectsExtracted(newSubjects);
-          }
+          // Store extracted data for user to review
+          setExtractedData({
+            subjects: newSubjects,
+            timetable: timetableEntries
+          });
 
-          // Wait a bit for subjects to be added, then add timetable entries
-          setTimeout(() => {
-            if (timetableEntries.length > 0) {
-              onTimetableExtracted(timetableEntries);
-            }
-            
-            const successMsg = [];
-            if (newSubjects.length > 0) successMsg.push(`${newSubjects.length} subjects`);
-            if (timetableEntries.length > 0) successMsg.push(`${timetableEntries.length} schedule entries`);
-            
-            toast.success(`Successfully extracted ${successMsg.join(' and ')} from your timetable!`);
-          }, 500);
+          const successMsg = [];
+          if (newSubjects.length > 0) successMsg.push(`${newSubjects.length} subjects`);
+          if (timetableEntries.length > 0) successMsg.push(`${timetableEntries.length} schedule entries`);
+          
+          toast.success(`Successfully extracted ${successMsg.join(' and ')} from your timetable! Click 'Add All to Timetable' to import.`);
 
         } catch (err) {
           console.error('Error extracting timetable:', err);
@@ -105,6 +103,24 @@ export const TimetableImageUpload = ({
       toast.error("Failed to process image");
       setIsUploading(false);
     }
+  };
+
+  const handleAddAllToTimetable = () => {
+    if (!extractedData) return;
+    
+    if (extractedData.subjects.length > 0) {
+      onSubjectsExtracted(extractedData.subjects);
+    }
+    
+    // Wait a bit for subjects to be added, then add timetable entries
+    setTimeout(() => {
+      if (extractedData.timetable.length > 0) {
+        onTimetableExtracted(extractedData.timetable);
+      }
+      
+      setExtractedData(null);
+      toast.success("All data added to your timetable!");
+    }, 500);
   };
 
   return (
@@ -129,10 +145,10 @@ export const TimetableImageUpload = ({
           </div>
         )}
 
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col gap-3">
           <Button
             variant="outline"
-            className="relative w-full sm:flex-1"
+            className="relative w-full"
             disabled={isUploading}
           >
             <input
@@ -154,6 +170,26 @@ export const TimetableImageUpload = ({
               </>
             )}
           </Button>
+
+          {extractedData && (
+            <div className="space-y-3">
+              <div className="bg-muted/50 rounded-lg p-4">
+                <h4 className="font-semibold text-sm mb-2">Extracted Data:</h4>
+                <div className="text-xs space-y-1 text-muted-foreground">
+                  <p>✓ {extractedData.subjects.length} subjects found</p>
+                  <p>✓ {extractedData.timetable.length} timetable entries found</p>
+                </div>
+              </div>
+              
+              <Button 
+                onClick={handleAddAllToTimetable} 
+                className="w-full gradient-primary"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add All to Timetable
+              </Button>
+            </div>
+          )}
         </div>
 
         <div className="text-xs text-muted-foreground">
