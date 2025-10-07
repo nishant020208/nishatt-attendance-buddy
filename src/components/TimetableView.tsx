@@ -5,7 +5,6 @@ import { Subject, TimetableEntry } from "@/types/attendance";
 import { Plus, Trash2, Clock } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { TimetableImageUpload } from "./TimetableImageUpload";
 
 interface TimetableViewProps {
   subjects: Subject[];
@@ -65,11 +64,6 @@ export const TimetableView = ({ subjects, timetable, onAddToTimetable, onRemoveF
 
   return (
     <div className="space-y-6">
-      <TimetableImageUpload 
-        subjects={subjects}
-        onSubjectsExtracted={handleSubjectsExtracted}
-        onTimetableExtracted={handleTimetableExtracted}
-      />
       <Card className="p-4 sm:p-6 gradient-card border-0 shadow-lg">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Clock className="h-5 w-5 text-primary" />
