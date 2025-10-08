@@ -185,7 +185,13 @@ const Index = () => {
             </TabsContent>
 
             <TabsContent value="calendar" className="space-y-6">
-              <AttendanceCalendar attendanceRecords={attendanceRecords} subjects={subjects} />
+              <AttendanceCalendar 
+                attendanceRecords={attendanceRecords} 
+                subjects={subjects} 
+                timetable={timetable}
+                onEditAttendance={editAttendance}
+                onMarkAttendance={markAttendance}
+              />
             </TabsContent>
 
             <TabsContent value="subjects" className="space-y-6">

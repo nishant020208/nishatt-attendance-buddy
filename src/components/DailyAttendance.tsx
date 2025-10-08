@@ -1,8 +1,9 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, XCircle, Calendar, MinusCircle } from "lucide-react";
+import { CheckCircle, XCircle, Calendar, MinusCircle, Edit2 } from "lucide-react";
 import { Subject, TimetableEntry, AttendanceRecord } from "@/types/attendance";
 import { format } from "date-fns";
+import { useState } from "react";
 
 interface DailyAttendanceProps {
   subjects: Subject[];
@@ -19,6 +20,7 @@ export const DailyAttendance = ({ subjects, todayTimetable, onMarkAttendance, on
   const today = format(new Date(), "EEEE");
   const todayDate = format(new Date(), "yyyy-MM-dd");
   const sortedTimetable = todayTimetable.sort((a, b) => a.time.localeCompare(b.time));
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   if (sortedTimetable.length === 0) {
     return (
@@ -61,66 +63,92 @@ export const DailyAttendance = ({ subjects, todayTimetable, onMarkAttendance, on
                 status ? status.bgColor : 'border-border bg-card'
               }`}
             >
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex-1">
-                  <h4 className="font-semibold text-sm sm:text-base">{subject?.name}</h4>
-                  <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
-                    <span>{subject?.code}</span>
-                    <span>•</span>
-                    <span>{entry.time}</span>
+              <div className="flex flex-col gap-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-sm sm:text-base">{subject?.name}</h4>
+                    <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
+                      <span>{subject?.code}</span>
+                      <span>•</span>
+                      <span>{entry.time}</span>
+                    </div>
                   </div>
+
+                  <Button
+                    onClick={() => setEditingId(editingId === entry.id ? null : entry.id)}
+                    size="icon"
+                    variant="ghost"
+                    className="h-8 w-8"
+                  >
+                    <Edit2 className="h-4 w-4" />
+                  </Button>
                 </div>
 
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => isMarked 
-                      ? onEditAttendance(entry.subjectId, entry.id, todayDate, true)
-                      : onMarkAttendance(entry.subjectId, true)
-                    }
-                    className={`flex-1 sm:flex-none ${
-                      record?.present === true 
-                        ? 'bg-success hover:bg-success/90' 
-                        : 'bg-success/20 hover:bg-success/30'
-                    }`}
-                    size="sm"
-                    variant={record?.present === true ? "default" : "outline"}
-                  >
-                    <CheckCircle className="h-4 w-4 mr-1" />
-                    Present
-                  </Button>
-                  <Button
-                    onClick={() => isMarked 
-                      ? onEditAttendance(entry.subjectId, entry.id, todayDate, false)
-                      : onMarkAttendance(entry.subjectId, false)
-                    }
-                    className={`flex-1 sm:flex-none ${
-                      record?.present === false 
-                        ? 'border-destructive bg-destructive text-destructive-foreground hover:bg-destructive/90' 
-                        : 'border-destructive/50 text-destructive hover:bg-destructive/10'
-                    }`}
-                    variant="outline"
-                    size="sm"
-                  >
-                    <XCircle className="h-4 w-4 mr-1" />
-                    Absent
-                  </Button>
-                  <Button
-                    onClick={() => isMarked 
-                      ? onEditAttendance(entry.subjectId, entry.id, todayDate, null)
-                      : onMarkAttendance(entry.subjectId, false)
-                    }
-                    className={`flex-1 sm:flex-none ${
-                      record && record.present === null
-                        ? 'bg-muted hover:bg-muted/80' 
-                        : 'hover:bg-muted/50'
-                    }`}
-                    variant="outline"
-                    size="sm"
-                  >
-                    <MinusCircle className="h-4 w-4 mr-1" />
-                    Off
-                  </Button>
-                </div>
+                {status && !editingId && (
+                  <div className="flex items-center gap-2">
+                    {status.icon && <status.icon className={`h-4 w-4 ${status.color}`} />}
+                    <span className={`text-sm font-medium ${status.color}`}>{status.text}</span>
+                  </div>
+                )}
+
+                {editingId === entry.id && (
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => {
+                        isMarked 
+                          ? onEditAttendance(entry.subjectId, entry.id, todayDate, true)
+                          : onMarkAttendance(entry.subjectId, true);
+                        setEditingId(null);
+                      }}
+                      className={`flex-1 sm:flex-none ${
+                        record?.present === true 
+                          ? 'bg-success hover:bg-success/90' 
+                          : 'bg-success/20 hover:bg-success/30'
+                      }`}
+                      size="sm"
+                      variant={record?.present === true ? "default" : "outline"}
+                    >
+                      <CheckCircle className="h-4 w-4 mr-1" />
+                      Present
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        isMarked 
+                          ? onEditAttendance(entry.subjectId, entry.id, todayDate, false)
+                          : onMarkAttendance(entry.subjectId, false);
+                        setEditingId(null);
+                      }}
+                      className={`flex-1 sm:flex-none ${
+                        record?.present === false 
+                          ? 'border-destructive bg-destructive text-destructive-foreground hover:bg-destructive/90' 
+                          : 'border-destructive/50 text-destructive hover:bg-destructive/10'
+                      }`}
+                      variant="outline"
+                      size="sm"
+                    >
+                      <XCircle className="h-4 w-4 mr-1" />
+                      Absent
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        isMarked 
+                          ? onEditAttendance(entry.subjectId, entry.id, todayDate, null)
+                          : onMarkAttendance(entry.subjectId, false);
+                        setEditingId(null);
+                      }}
+                      className={`flex-1 sm:flex-none ${
+                        record && record.present === null
+                          ? 'bg-muted hover:bg-muted/80' 
+                          : 'hover:bg-muted/50'
+                      }`}
+                      variant="outline"
+                      size="sm"
+                    >
+                      <MinusCircle className="h-4 w-4 mr-1" />
+                      Off
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           );

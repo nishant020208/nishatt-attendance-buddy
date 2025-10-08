@@ -3,15 +3,20 @@ import { Calendar } from "@/components/ui/calendar";
 import { useState } from "react";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
-import { AttendanceRecord, Subject } from "@/types/attendance";
+import { AttendanceRecord, Subject, TimetableEntry } from "@/types/attendance";
+import { DateAttendanceDialog } from "./DateAttendanceDialog";
 
 interface AttendanceCalendarProps {
   attendanceRecords: AttendanceRecord[];
   subjects: Subject[];
+  timetable: TimetableEntry[];
+  onEditAttendance: (subjectId: string, timetableEntryId: string, date: string, newPresent: boolean | null) => void;
+  onMarkAttendance: (subjectId: string, present: boolean) => void;
 }
 
-export const AttendanceCalendar = ({ attendanceRecords, subjects }: AttendanceCalendarProps) => {
+export const AttendanceCalendar = ({ attendanceRecords, subjects, timetable, onEditAttendance, onMarkAttendance }: AttendanceCalendarProps) => {
   const [date, setDate] = useState<Date | undefined>(new Date());
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   // Group records by date and calculate percentage
   const dateAttendanceMap = new Map<string, { attended: number; total: number }>();
@@ -54,7 +59,12 @@ export const AttendanceCalendar = ({ attendanceRecords, subjects }: AttendanceCa
         <Calendar
           mode="single"
           selected={date}
-          onSelect={setDate}
+          onSelect={(newDate) => {
+            setDate(newDate);
+            if (newDate) {
+              setDialogOpen(true);
+            }
+          }}
           className="rounded-md border"
           modifiers={{
             perfect: Array.from(perfect),
@@ -126,6 +136,19 @@ export const AttendanceCalendar = ({ attendanceRecords, subjects }: AttendanceCa
             Selected: {format(date, "PPP")}
           </p>
         </div>
+      )}
+
+      {date && (
+        <DateAttendanceDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          date={date}
+          subjects={subjects}
+          timetable={timetable}
+          attendanceRecords={attendanceRecords}
+          onEditAttendance={onEditAttendance}
+          onMarkAttendance={onMarkAttendance}
+        />
       )}
     </Card>
   );
