@@ -225,13 +225,28 @@ export const useAttendance = () => {
         let attended = subject.attended;
         let totalClasses = subject.totalClasses;
         
-        // Handle state transitions
-        if (oldPresent === true && newPresent !== true) attended--;
-        if (oldPresent !== true && newPresent === true) attended++;
-        if (oldPresent === null && newPresent !== null) totalClasses++;
-        if (oldPresent !== null && newPresent === null) {
+        // Off (null) means class never happened (0/0)
+        // Handle all state transitions correctly
+        if (oldPresent === null && newPresent === true) {
+          // null → present: +1/+1
+          attended++;
+          totalClasses++;
+        } else if (oldPresent === null && newPresent === false) {
+          // null → absent: +0/+1
+          totalClasses++;
+        } else if (oldPresent === true && newPresent === null) {
+          // present → null: -1/-1
+          attended--;
           totalClasses--;
-          if (oldPresent === true) attended--;
+        } else if (oldPresent === false && newPresent === null) {
+          // absent → null: +0/-1
+          totalClasses--;
+        } else if (oldPresent === true && newPresent === false) {
+          // present → absent: -1/+0
+          attended--;
+        } else if (oldPresent === false && newPresent === true) {
+          // absent → present: +1/+0
+          attended++;
         }
         
         return { ...subject, attended, totalClasses };
