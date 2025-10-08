@@ -86,7 +86,7 @@ export const useAttendance = () => {
     toast.success("Removed from timetable");
   };
 
-  const markAttendance = (subjectId: string, present: boolean) => {
+  const markAttendance = (subjectId: string, present: boolean | null) => {
     const today = format(new Date(), "yyyy-MM-dd");
     const todayDay = format(new Date(), "EEEE");
     const timetableEntry = timetable.find(
@@ -108,6 +108,10 @@ export const useAttendance = () => {
 
     const updatedSubjects = subjects.map(subject => {
       if (subject.id === subjectId) {
+        // Off (null) means no class happened, so don't count it at all (0/0)
+        if (present === null) {
+          return subject; // No change to stats
+        }
         return {
           ...subject,
           attended: present ? subject.attended + 1 : subject.attended,
@@ -121,23 +125,36 @@ export const useAttendance = () => {
     localStorage.setItem(SUBJECTS_KEY, JSON.stringify(updatedSubjects));
 
     const subject = updatedSubjects.find(s => s.id === subjectId);
-    const percentage = subject 
-      ? ((subject.attended / subject.totalClasses) * 100).toFixed(1)
-      : "0";
-
-    if (present) {
+    
+    if (present === true) {
+      const percentage = subject && subject.totalClasses > 0
+        ? ((subject.attended / subject.totalClasses) * 100).toFixed(1)
+        : "0";
       toast.success(`Marked present for ${subject?.name}`, {
         description: `Current attendance: ${percentage}%`,
       });
-    } else {
+      
+      if (subject && (subject.attended / subject.totalClasses) * 100 < 75) {
+        toast.warning("⚠️ Attendance Alert", {
+          description: `${subject.name} attendance is below 75%!`,
+        });
+      }
+    } else if (present === false) {
+      const percentage = subject && subject.totalClasses > 0
+        ? ((subject.attended / subject.totalClasses) * 100).toFixed(1)
+        : "0";
       toast.error(`Marked absent for ${subject?.name}`, {
         description: `Current attendance: ${percentage}%`,
       });
-    }
-
-    if (subject && (subject.attended / subject.totalClasses) * 100 < 75) {
-      toast.warning("⚠️ Attendance Alert", {
-        description: `${subject.name} attendance is below 75%!`,
+      
+      if (subject && (subject.attended / subject.totalClasses) * 100 < 75) {
+        toast.warning("⚠️ Attendance Alert", {
+          description: `${subject.name} attendance is below 75%!`,
+        });
+      }
+    } else {
+      toast.info(`Class off for ${subject?.name}`, {
+        description: "Not counted in attendance stats",
       });
     }
   };
