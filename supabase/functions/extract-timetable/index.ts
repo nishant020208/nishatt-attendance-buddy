@@ -27,14 +27,48 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-2.5-pro",
         messages: [
           {
             role: "user",
             content: [
               {
                 type: "text",
-                text: "Analyze this timetable image and extract all the information. Identify subjects with their codes, days, and time slots. Return the complete timetable structure."
+                text: `You are an expert at analyzing timetable images. Extract ALL information from this timetable image with maximum accuracy.
+
+CRITICAL INSTRUCTIONS:
+1. SUBJECTS: Extract EVERY subject visible in the timetable
+   - Include the full subject name and its code/abbreviation
+   - Look for subjects in ALL cells, headers, and labels
+   - Common patterns: Subject names are often in full caps, codes are short (2-5 chars)
+   - Don't miss any subject, even if it appears only once
+
+2. TIMETABLE ENTRIES: Extract EVERY class schedule entry
+   - Day: Must be one of Monday, Tuesday, Wednesday, Thursday, Friday, Saturday
+   - Time: Extract in HH:MM format (24-hour). Common patterns: 09:05, 11:45, 14:00, etc.
+   - Subject Code: Must match exactly with the codes from the subjects array
+   - Look in EVERY cell of the timetable grid
+   - If multiple classes happen at the same time on different days, create separate entries
+
+3. HANDLING DIFFERENT FORMATS:
+   - Grid format: Rows = time slots, Columns = days (or vice versa)
+   - List format: Sequential entries with day/time/subject
+   - Mixed format: Combination of the above
+   - Look for time indicators (AM/PM, 24-hour format)
+   - Look for day abbreviations (Mon, Tue, etc.) and expand them
+
+4. QUALITY CHECKS:
+   - Every subject in the subjects array must appear at least once in timetable entries
+   - Every timetable entry's subjectCode must exist in the subjects array
+   - Time should be realistic (typically between 07:00 and 20:00)
+   - Extract ALL visible entries, don't skip any cells
+
+5. SPECIAL CASES:
+   - If a cell contains multiple subjects, create separate entries for each
+   - If a subject has variants (like "Lab", "Lecture"), treat as separate if they have different codes
+   - Ignore break times, lunch periods unless they're labeled as subjects
+   
+Please analyze the image thoroughly and extract EVERYTHING you can see.`
               },
               {
                 type: "image_url",
