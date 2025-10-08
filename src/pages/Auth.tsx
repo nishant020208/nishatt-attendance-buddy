@@ -172,7 +172,7 @@ export const Auth = () => {
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signin-email">Email</Label>
+                  <Label htmlFor="signin-email">ID</Label>
                   <Input
                     id="signin-email"
                     type="email"
@@ -208,7 +208,7 @@ export const Auth = () => {
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
+                  <Label htmlFor="signup-email">ID</Label>
                   <Input
                     id="signup-email"
                     type="email"
