@@ -124,7 +124,7 @@ export const TimetableView = ({ subjects, timetable, onAddToTimetable, onRemoveF
                     return (
                       <div key={entry.id} className="flex items-center justify-between gap-2 p-2 bg-muted/50 rounded-lg">
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{subject?.code}</p>
+                          <p className="text-sm font-medium truncate">{subject?.name}</p>
                           <p className="text-xs text-muted-foreground">{entry.time}</p>
                         </div>
                         <Button
