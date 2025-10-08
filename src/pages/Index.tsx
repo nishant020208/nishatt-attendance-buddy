@@ -203,7 +203,33 @@ const Index = () => {
             </TabsContent>
 
             <TabsContent value="chat" className="space-y-6">
-              <ChatTab subjects={subjects} timetable={timetable} />
+              <ChatTab 
+                subjects={subjects} 
+                timetable={timetable}
+                onSubjectsExtracted={(extractedSubjects) => {
+                  extractedSubjects.forEach(subject => {
+                    const exists = subjects.find(s => s.code === subject.code);
+                    if (!exists) {
+                      addSubject(subject.name, subject.code);
+                    }
+                  });
+                }}
+                onTimetableExtracted={(entries) => {
+                  entries.forEach(entry => {
+                    const subject = subjects.find(s => s.code === entry.subjectCode);
+                    if (subject) {
+                      const isDuplicate = timetable.some(
+                        t => t.day === entry.day && 
+                             t.subjectId === subject.id && 
+                             t.time === entry.time
+                      );
+                      if (!isDuplicate) {
+                        addToTimetable(entry.day, subject.id, entry.time);
+                      }
+                    }
+                  });
+                }}
+              />
             </TabsContent>
           </Tabs>
         </main>
