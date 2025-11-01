@@ -29,110 +29,163 @@ export const DateAttendanceDialog = ({
 }: DateAttendanceDialogProps) => {
   const dayName = DAYS[date.getDay()];
   const dateStr = format(date, "yyyy-MM-dd");
+  const today = format(new Date(), "yyyy-MM-dd");
+  const isTodayOrFuture = dateStr >= today;
   const dayTimetable = timetable.filter(entry => entry.day === dayName).sort((a, b) => a.time.localeCompare(b.time));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            {format(date, "PPP")} - {dayName}
+          <DialogTitle className="text-xl font-semibold">
+            {format(date, "EEEE, MMMM d, yyyy")}
           </DialogTitle>
+          <p className="text-sm text-muted-foreground mt-1">
+            {dayTimetable.length} {dayTimetable.length === 1 ? 'class' : 'classes'} scheduled
+          </p>
         </DialogHeader>
 
-        <div className="space-y-3 mt-4">
+        <div className="space-y-3 mt-6">
           {dayTimetable.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">
-              No classes scheduled for this day
-            </p>
+            <div className="text-center py-12">
+              <p className="text-muted-foreground text-sm">No classes scheduled for this day</p>
+            </div>
           ) : (
             dayTimetable.map(entry => {
               const subject = subjects.find(s => s.id === entry.subjectId);
+              if (!subject) return null; // Only show subjects that exist
+              
               const record = attendanceRecords.find(
                 r => r.timetableEntryId === entry.id && r.date === dateStr
               );
 
               const getStatusDisplay = () => {
                 if (!record) return null;
-                if (record.present === true) return { icon: CheckCircle, text: "Present", color: "text-success" };
-                if (record.present === false) return { icon: XCircle, text: "Absent", color: "text-destructive" };
-                return { icon: MinusCircle, text: "Off", color: "text-muted-foreground" };
+                if (record.present === true) return { icon: CheckCircle, text: "Present", color: "text-success", bg: "bg-success/10" };
+                if (record.present === false) return { icon: XCircle, text: "Absent", color: "text-destructive", bg: "bg-destructive/10" };
+                return { icon: MinusCircle, text: "Holiday/Off", color: "text-muted-foreground", bg: "bg-muted/50" };
               };
 
               const status = getStatusDisplay();
               const isMarked = !!record;
+              const canEdit = isTodayOrFuture || isMarked; // Can only mark today/future or edit past marked records
 
               return (
                 <div
                   key={entry.id}
-                  className="p-4 rounded-lg border bg-card"
+                  className={`p-5 rounded-xl border-2 transition-all ${
+                    status ? `${status.bg} border-border/50` : 'bg-card border-border'
+                  }`}
                 >
-                  <div className="mb-3">
-                    <h4 className="font-semibold text-sm">{subject?.name}</h4>
-                    <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
-                      <span>{subject?.code}</span>
-                      <span>•</span>
-                      <span>{entry.time}</span>
+                  <div className="mb-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-base mb-1">{subject.name}</h4>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <span className="font-medium">{subject.code}</span>
+                          <span>•</span>
+                          <span className="flex items-center gap-1.5">
+                            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            {entry.time}
+                          </span>
+                        </div>
+                      </div>
+                      {status && (
+                        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full ${status.bg}`}>
+                          <status.icon className={`h-3.5 w-3.5 ${status.color}`} />
+                          <span className={`text-xs font-semibold ${status.color}`}>{status.text}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
-                  {status && (
-                    <div className="flex items-center gap-2 mb-3">
-                      {status.icon && <status.icon className={`h-4 w-4 ${status.color}`} />}
-                      <span className={`text-sm font-medium ${status.color}`}>{status.text}</span>
+                  {canEdit ? (
+                    isMarked ? (
+                      <div className="space-y-2">
+                        <p className="text-xs text-muted-foreground font-medium">Edit Attendance:</p>
+                        <div className="grid grid-cols-3 gap-2">
+                          <Button
+                            onClick={() => onEditAttendance(entry.subjectId, entry.id, dateStr, true)}
+                            className={`${
+                              record?.present === true 
+                                ? 'bg-success text-white hover:bg-success/90 border-success' 
+                                : 'border-success/30 text-success hover:bg-success/10 hover:border-success'
+                            }`}
+                            size="sm"
+                            variant={record?.present === true ? "default" : "outline"}
+                          >
+                            <CheckCircle className="h-4 w-4 mr-1.5" />
+                            Present
+                          </Button>
+                          <Button
+                            onClick={() => onEditAttendance(entry.subjectId, entry.id, dateStr, false)}
+                            className={`${
+                              record?.present === false 
+                                ? 'bg-destructive text-white hover:bg-destructive/90 border-destructive' 
+                                : 'border-destructive/30 text-destructive hover:bg-destructive/10 hover:border-destructive'
+                            }`}
+                            variant={record?.present === false ? "default" : "outline"}
+                            size="sm"
+                          >
+                            <XCircle className="h-4 w-4 mr-1.5" />
+                            Absent
+                          </Button>
+                          <Button
+                            onClick={() => onEditAttendance(entry.subjectId, entry.id, dateStr, null)}
+                            className={`${
+                              record?.present === null
+                                ? 'bg-muted text-foreground hover:bg-muted/80 border-muted' 
+                                : 'border-muted text-muted-foreground hover:bg-muted/30 hover:border-muted'
+                            }`}
+                            variant={record?.present === null ? "default" : "outline"}
+                            size="sm"
+                          >
+                            <MinusCircle className="h-4 w-4 mr-1.5" />
+                            Off
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <p className="text-xs text-muted-foreground font-medium">Mark Attendance:</p>
+                        <div className="grid grid-cols-3 gap-2">
+                          <Button
+                            onClick={() => onMarkAttendance(entry.subjectId, true)}
+                            className="border-success/30 text-success hover:bg-success/10 hover:border-success"
+                            size="sm"
+                            variant="outline"
+                          >
+                            <CheckCircle className="h-4 w-4 mr-1.5" />
+                            Present
+                          </Button>
+                          <Button
+                            onClick={() => onMarkAttendance(entry.subjectId, false)}
+                            className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:border-destructive"
+                            variant="outline"
+                            size="sm"
+                          >
+                            <XCircle className="h-4 w-4 mr-1.5" />
+                            Absent
+                          </Button>
+                          <Button
+                            onClick={() => onMarkAttendance(entry.subjectId, false)}
+                            className="border-muted text-muted-foreground hover:bg-muted/30 hover:border-muted"
+                            variant="outline"
+                            size="sm"
+                          >
+                            <MinusCircle className="h-4 w-4 mr-1.5" />
+                            Off
+                          </Button>
+                        </div>
+                      </div>
+                    )
+                  ) : (
+                    <div className="text-center py-2">
+                      <p className="text-xs text-muted-foreground">Past dates cannot be marked</p>
                     </div>
                   )}
-
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={() => isMarked 
-                        ? onEditAttendance(entry.subjectId, entry.id, dateStr, true)
-                        : onMarkAttendance(entry.subjectId, true)
-                      }
-                      className={`flex-1 ${
-                        record?.present === true 
-                          ? 'bg-success hover:bg-success/90' 
-                          : 'bg-success/20 hover:bg-success/30'
-                      }`}
-                      size="sm"
-                      variant={record?.present === true ? "default" : "outline"}
-                    >
-                      <CheckCircle className="h-4 w-4 mr-1" />
-                      Present
-                    </Button>
-                    <Button
-                      onClick={() => isMarked 
-                        ? onEditAttendance(entry.subjectId, entry.id, dateStr, false)
-                        : onMarkAttendance(entry.subjectId, false)
-                      }
-                      className={`flex-1 ${
-                        record?.present === false 
-                          ? 'border-destructive bg-destructive text-destructive-foreground hover:bg-destructive/90' 
-                          : 'border-destructive/50 text-destructive hover:bg-destructive/10'
-                      }`}
-                      variant="outline"
-                      size="sm"
-                    >
-                      <XCircle className="h-4 w-4 mr-1" />
-                      Absent
-                    </Button>
-                    <Button
-                      onClick={() => isMarked 
-                        ? onEditAttendance(entry.subjectId, entry.id, dateStr, null)
-                        : onMarkAttendance(entry.subjectId, false)
-                      }
-                      className={`flex-1 ${
-                        record && record.present === null
-                          ? 'bg-muted hover:bg-muted/80' 
-                          : 'hover:bg-muted/50'
-                      }`}
-                      variant="outline"
-                      size="sm"
-                    >
-                      <MinusCircle className="h-4 w-4 mr-1" />
-                      Off
-                    </Button>
-                  </div>
                 </div>
               );
             })
