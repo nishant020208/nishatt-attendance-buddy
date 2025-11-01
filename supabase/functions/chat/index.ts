@@ -1,7 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,15 +13,88 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, timetable, subjects } = await req.json();
+    // Verify authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      console.log('Unauthorized request - missing auth header');
+      return new Response(JSON.stringify({ error: 'Authentication required' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
-    // Build context about the user's timetable and attendance
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    
+    if (authError || !user) {
+      console.log('Authentication failed');
+      return new Response(JSON.stringify({ error: 'Invalid authentication' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Validate and sanitize input
+    const requestData = await req.json();
+    const { messages, timetable, subjects } = requestData;
+
+    // Basic input validation
+    if (!Array.isArray(messages) || messages.length === 0) {
+      return new Response(JSON.stringify({ error: 'Invalid messages format' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (messages.length > 50) {
+      return new Response(JSON.stringify({ error: 'Too many messages' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Validate message content
+    for (const msg of messages) {
+      if (!msg.role || !msg.content) {
+        return new Response(JSON.stringify({ error: 'Invalid message format' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      if (typeof msg.content !== 'string' || msg.content.length > 5000) {
+        return new Response(JSON.stringify({ error: 'Message content too long' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
+    // Validate arrays
+    if (timetable && (!Array.isArray(timetable) || timetable.length > 100)) {
+      return new Response(JSON.stringify({ error: 'Invalid timetable data' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (subjects && (!Array.isArray(subjects) || subjects.length > 50)) {
+      return new Response(JSON.stringify({ error: 'Invalid subjects data' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const contextMessage = {
       role: 'system',
       content: `You are an intelligent attendance assistant. You have access to the student's timetable and attendance data.
       
-Current timetable: ${JSON.stringify(timetable)}
-Current subjects: ${JSON.stringify(subjects)}
+Current timetable: ${timetable ? timetable.length + ' entries' : 'No timetable'}
+Current subjects: ${subjects ? subjects.length + ' subjects' : 'No subjects'}
 
 Help the student with questions about:
 - Which classes to attend or bunk
@@ -34,12 +106,21 @@ Help the student with questions about:
 Be concise, helpful, and provide specific advice based on their actual data.`
     };
 
-    console.log('Calling Lovable AI with context:', contextMessage);
+    console.log('Processing chat request', { 
+      userId: user.id.substring(0, 8),
+      messageCount: messages.length,
+      timestamp: Date.now()
+    });
+
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY is not configured');
+    }
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${lovableApiKey}`,
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -49,36 +130,46 @@ Be concise, helpful, and provide specific advice based on their actual data.`
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Lovable AI error:', errorText);
-      
       if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 429 }
-        );
+        return new Response(JSON.stringify({ 
+          error: 'Rate limit exceeded. Please try again later.' 
+        }), {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
       }
       
       if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: 'Payment required. Please add credits to your workspace.' }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 402 }
-        );
+        return new Response(JSON.stringify({ 
+          error: 'Payment required. Please add credits to your workspace.' 
+        }), {
+          status: 402,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
       }
-      
-      throw new Error(`Lovable AI error: ${errorText}`);
+
+      console.error('AI gateway error', { status: response.status });
+      return new Response(JSON.stringify({ 
+        error: 'Unable to process request' 
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const data = await response.json();
-    console.log('OpenAI response received');
-
     return new Response(JSON.stringify(data), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
+
   } catch (error) {
-    console.error('Error in chat function:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    console.error('Error in chat function', { 
+      error: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: Date.now()
+    });
+    return new Response(JSON.stringify({ 
+      error: 'An error occurred processing your request' 
+    }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

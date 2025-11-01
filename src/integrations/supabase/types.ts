@@ -59,6 +59,122 @@ export type Database = {
         }
         Relationships: []
       }
+      user_attendance: {
+        Row: {
+          created_at: string | null
+          date: string
+          id: string
+          present: boolean
+          subject_id: string
+          timetable_entry_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          date: string
+          id?: string
+          present: boolean
+          subject_id: string
+          timetable_entry_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          date?: string
+          id?: string
+          present?: boolean
+          subject_id?: string
+          timetable_entry_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_attendance_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "user_subjects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_attendance_timetable_entry_id_fkey"
+            columns: ["timetable_entry_id"]
+            isOneToOne: false
+            referencedRelation: "user_timetable"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_subjects: {
+        Row: {
+          attended_classes: number | null
+          code: string
+          created_at: string | null
+          id: string
+          name: string
+          total_classes: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          attended_classes?: number | null
+          code: string
+          created_at?: string | null
+          id?: string
+          name: string
+          total_classes?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          attended_classes?: number | null
+          code?: string
+          created_at?: string | null
+          id?: string
+          name?: string
+          total_classes?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_timetable: {
+        Row: {
+          created_at: string | null
+          day: string
+          id: string
+          subject_id: string
+          time: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          day: string
+          id?: string
+          subject_id: string
+          time: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          day?: string
+          id?: string
+          subject_id?: string
+          time?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_timetable_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "user_subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

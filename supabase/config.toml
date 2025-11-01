@@ -1,7 +1,7 @@
 project_id = "stnutgedcvpoddfimiei"
 
 [functions.chat]
-verify_jwt = false
+verify_jwt = true
 
 [functions.extract-timetable]
-verify_jwt = false
+verify_jwt = true

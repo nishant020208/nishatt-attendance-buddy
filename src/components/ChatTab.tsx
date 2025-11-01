@@ -100,7 +100,6 @@ export const ChatTab = ({ subjects, timetable, onSubjectsExtracted, onTimetableE
 
           setUploadedImage(null);
         } catch (error) {
-          console.error('Image processing error:', error);
           toast({
             title: "Error",
             description: "Failed to extract timetable from image. Please try again.",
@@ -150,7 +149,6 @@ export const ChatTab = ({ subjects, timetable, onSubjectsExtracted, onTimetableE
 
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
-      console.error('Chat error:', error);
       toast({
         title: "Error",
         description: "Failed to get response from AI. Please try again.",

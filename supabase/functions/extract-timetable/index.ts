@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,14 +12,76 @@ serve(async (req) => {
   }
 
   try {
-    const { imageData } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+    // Verify authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      console.log('Unauthorized request - missing auth header');
+      return new Response(JSON.stringify({ error: 'Authentication required' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    console.log('Extracting timetable from image...');
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    
+    if (authError || !user) {
+      console.log('Authentication failed');
+      return new Response(JSON.stringify({ error: 'Invalid authentication' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const { imageData } = await req.json();
+
+    // Validate image data
+    if (!imageData || typeof imageData !== 'string') {
+      return new Response(JSON.stringify({ error: 'Invalid image data' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Check base64 string size (approximately 10MB limit)
+    const base64Length = imageData.replace(/^data:image\/\w+;base64,/, '').length;
+    const sizeInBytes = (base64Length * 3) / 4;
+    const maxSizeInBytes = 10 * 1024 * 1024; // 10MB
+
+    if (sizeInBytes > maxSizeInBytes) {
+      return new Response(JSON.stringify({ 
+        error: 'Image size exceeds 10MB limit' 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Validate base64 image format
+    if (!imageData.match(/^data:image\/(png|jpeg|jpg|gif|webp);base64,/)) {
+      return new Response(JSON.stringify({ 
+        error: 'Invalid image format. Supported formats: PNG, JPEG, JPG, GIF, WEBP' 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    console.log('Processing timetable extraction', {
+      userId: user.id.substring(0, 8),
+      imageSizeKB: Math.round(sizeInBytes / 1024),
+      timestamp: Date.now()
+    });
+
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY is not configured');
+    }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -141,13 +204,16 @@ Please analyze the image thoroughly and extract EVERYTHING you can see.`
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
+      console.error("AI gateway error", { status: response.status });
       throw new Error(`AI gateway error: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log('AI response:', JSON.stringify(data, null, 2));
+
+    console.log('Timetable extraction successful', {
+      userId: user.id.substring(0, 8),
+      timestamp: Date.now()
+    });
 
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
     if (!toolCall) {
@@ -155,7 +221,6 @@ Please analyze the image thoroughly and extract EVERYTHING you can see.`
     }
 
     const extractedData = JSON.parse(toolCall.function.arguments);
-    console.log('Extracted timetable data:', extractedData);
 
     return new Response(
       JSON.stringify({ success: true, data: extractedData }),
@@ -163,7 +228,10 @@ Please analyze the image thoroughly and extract EVERYTHING you can see.`
     );
 
   } catch (error) {
-    console.error('Error in extract-timetable function:', error);
+    console.error('Error in extract-timetable function', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: Date.now()
+    });
     return new Response(
       JSON.stringify({ 
         error: error instanceof Error ? error.message : "Failed to extract timetable" 

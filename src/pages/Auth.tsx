@@ -8,6 +8,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, LogIn, UserPlus } from "lucide-react";
+import { z } from "zod";
+
+const authSchema = z.object({
+  email: z.string().email('Invalid email address').max(255, 'Email too long'),
+  password: z.string()
+    .min(8, 'Password must be at least 8 characters')
+    .max(100, 'Password too long')
+    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+    .regex(/[0-9]/, 'Password must contain at least one number'),
+});
 
 export const Auth = () => {
   const [email, setEmail] = useState("");
@@ -46,10 +57,13 @@ export const Auth = () => {
       return;
     }
 
-    if (password.length < 6) {
+    // Validate with zod
+    const validation = authSchema.safeParse({ email, password });
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
       toast({
-        title: "Weak password",
-        description: "Password must be at least 6 characters long",
+        title: "Validation error",
+        description: firstError.message,
         variant: "destructive"
       });
       return;
@@ -58,8 +72,8 @@ export const Auth = () => {
     setLoading(true);
     try {
       const { error } = await supabase.auth.signUp({
-        email,
-        password,
+        email: validation.data.email,
+        password: validation.data.password,
         options: {
           emailRedirectTo: `${window.location.origin}/`
         }
@@ -106,10 +120,21 @@ export const Auth = () => {
       return;
     }
 
+    // Basic email validation for sign in
+    const emailValidation = z.string().email().safeParse(email);
+    if (!emailValidation.success) {
+      toast({
+        title: "Invalid email",
+        description: "Please enter a valid email address",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setLoading(true);
     try {
       const { error } = await supabase.auth.signInWithPassword({
-        email,
+        email: emailValidation.data,
         password,
       });
 
@@ -232,7 +257,7 @@ export const Auth = () => {
                     className="border-primary/30 focus-visible:ring-primary"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Password must be at least 6 characters
+                    Password must be at least 8 characters, include uppercase, lowercase, and a number
                   </p>
                 </div>
                 <Button 
