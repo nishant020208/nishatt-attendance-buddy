@@ -19,6 +19,11 @@ export const DashboardHeader = () => {
         variant: "destructive"
       });
     } else {
+      // Clear any remaining localStorage data for security
+      localStorage.removeItem('nishatt_subjects');
+      localStorage.removeItem('nishatt_timetable');
+      localStorage.removeItem('nishatt_attendance');
+      
       toast({
         title: "Signed out",
         description: "You've been signed out successfully"

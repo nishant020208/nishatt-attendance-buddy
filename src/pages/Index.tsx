@@ -37,6 +37,7 @@ const Index = () => {
     getMarkedToday,
     calculateOverallStats,
     importTimetable,
+    loading: dataLoading,
   } = useAttendance();
 
   useEffect(() => {
@@ -59,7 +60,7 @@ const Index = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  if (loading) {
+  if (loading || dataLoading) {
     return (
       <ThemeProvider attribute="class" defaultTheme="light">
         <div className="min-h-screen gradient-mesh flex items-center justify-center">
