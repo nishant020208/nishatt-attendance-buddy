@@ -214,6 +214,24 @@ All colors MUST be HSL.
   }
 }
 
+/* Hide Lovable badge */
+[data-lovable-badge],
+a[href*="lovable.dev"],
+a[href*="lovable"],
+div[class*="lovable"],
+div[class*="badge"][class*="lovable"],
+iframe[src*="lovable"],
+iframe[id*="lovable"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  position: absolute !important;
+  left: -9999px !important;
+}
+
 /* Mobile optimizations */
 @media (max-width: 640px) {
   body {

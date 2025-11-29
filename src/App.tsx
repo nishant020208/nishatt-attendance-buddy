@@ -12,69 +12,25 @@ const queryClient = new QueryClient();
 
 const App = () => {
   useEffect(() => {
-    const clickBadgeClose = () => {
-      // Multiple selector strategies
+    const hideBadge = () => {
       const selectors = [
         '[data-lovable-badge]',
         'a[href*="lovable"]',
-        'a[href*="lovable.dev"]',
-        'div[class*="lovable"]',
-        'div[class*="badge"]'
+        'iframe[src*="lovable"]'
       ];
 
-      for (const selector of selectors) {
-        const elements = document.querySelectorAll(selector);
-        elements.forEach(element => {
-          // Try to find and click close button
-          const closeBtn = element.querySelector('button') ||
-                          element.querySelector('[aria-label*="close"]') ||
-                          element.querySelector('[aria-label*="Close"]') ||
-                          element.querySelector('svg')?.parentElement as HTMLElement;
-          
-          if (closeBtn && closeBtn.tagName === 'BUTTON') {
-            closeBtn.click();
-          }
-
-          // Try to hide the badge directly
-          const badgeElement = element.closest('div') as HTMLElement;
-          if (badgeElement) {
-            badgeElement.style.display = 'none';
-            badgeElement.style.visibility = 'hidden';
-            badgeElement.style.opacity = '0';
-            badgeElement.style.pointerEvents = 'none';
-          }
+      selectors.forEach(selector => {
+        document.querySelectorAll(selector).forEach(el => {
+          (el as HTMLElement).style.display = 'none';
         });
-      }
-
-      // Also try to find and hide any iframe or container with lovable
-      const iframes = document.querySelectorAll('iframe');
-      iframes.forEach(iframe => {
-        if (iframe.src?.includes('lovable') || iframe.id?.includes('lovable')) {
-          (iframe as HTMLElement).style.display = 'none';
-        }
       });
     };
 
-    // Run immediately
-    clickBadgeClose();
+    hideBadge();
+    const observer = new MutationObserver(hideBadge);
+    observer.observe(document.body, { childList: true, subtree: true });
 
-    // Run every 50ms for aggressive removal
-    const interval = setInterval(clickBadgeClose, 50);
-    
-    // Watch for DOM changes
-    const observer = new MutationObserver(() => {
-      clickBadgeClose();
-    });
-    
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true
-    });
-
-    return () => {
-      clearInterval(interval);
-      observer.disconnect();
-    };
+    return () => observer.disconnect();
   }, []);
 
   return (
