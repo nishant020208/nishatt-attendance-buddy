@@ -1,6 +1,5 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,30 +12,19 @@ serve(async (req) => {
   }
 
   try {
-    // Verify authentication
+    // With verify_jwt = true, JWT is already verified by Supabase
+    // Extract user ID from JWT for logging purposes
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      console.log('Unauthorized request - missing auth header');
-      return new Response(JSON.stringify({ error: 'Authentication required' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    let userId = 'anonymous';
     
-    if (authError || !user) {
-      console.log('Authentication failed');
-      return new Response(JSON.stringify({ error: 'Invalid authentication' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    if (authHeader) {
+      try {
+        const jwt = authHeader.replace('Bearer ', '');
+        const payload = JSON.parse(atob(jwt.split('.')[1]));
+        userId = payload.sub || 'unknown';
+      } catch (e) {
+        // If JWT parsing fails, continue with anonymous
+      }
     }
 
     // Validate and sanitize input
@@ -107,7 +95,7 @@ Be concise, helpful, and provide specific advice based on their actual data.`
     };
 
     console.log('Processing chat request', { 
-      userId: user.id.substring(0, 8),
+      userId: userId.substring(0, 8),
       messageCount: messages.length,
       timestamp: Date.now()
     });
