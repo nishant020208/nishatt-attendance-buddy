@@ -17,6 +17,23 @@ import { Calendar, TableIcon, TrendingUp, Clock, MessageSquare, Database } from 
 import { ChatTab } from "@/components/ChatTab";
 import { TimetableCodeDialog } from "@/components/TimetableCodeDialog";
 import { SubjectManagement } from "@/components/SubjectManagement";
+import { AnimatedBackground3D } from "@/components/AnimatedBackground3D";
+import { useTheme } from "next-themes";
+
+// Dashboard content wrapper with 3D background
+const DashboardContent = ({ children }: { children: React.ReactNode }) => {
+  const { theme } = useTheme();
+  
+  return (
+    <div className="min-h-screen bg-background pb-20 sm:pb-8 relative overflow-hidden">
+      <AnimatedBackground3D variant={theme === 'vibrant' ? 'vibrant' : 'dashboard'} />
+      <div className="absolute inset-0 bg-background/70 backdrop-blur-[1px]" />
+      <div className="relative z-10">
+        {children}
+      </div>
+    </div>
+  );
+};
 
 const Index = () => {
   const navigate = useNavigate();
@@ -62,7 +79,7 @@ const Index = () => {
 
   if (loading || dataLoading) {
     return (
-      <ThemeProvider attribute="class" defaultTheme="light">
+      <ThemeProvider attribute="class" defaultTheme="light" themes={['light', 'dark', 'vibrant']}>
         <div className="min-h-screen gradient-mesh flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
@@ -83,10 +100,10 @@ const Index = () => {
 
   if (subjects.length === 0) {
     return (
-      <ThemeProvider attribute="class" defaultTheme="light">
-        <div className="min-h-screen bg-background">
+      <ThemeProvider attribute="class" defaultTheme="light" themes={['light', 'dark', 'vibrant']}>
+        <DashboardContent>
           <DashboardHeader />
-          <main className="container mx-auto px-4 py-8">
+          <main className="container mx-auto px-4 py-8 relative z-10">
             <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
                 <h2 className="text-2xl sm:text-3xl font-bold mb-2">Get Started</h2>
@@ -101,17 +118,17 @@ const Index = () => {
             </div>
             <EmptyState />
           </main>
-        </div>
+        </DashboardContent>
       </ThemeProvider>
     );
   }
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="light">
-      <div className="min-h-screen bg-background gradient-mesh pb-20 sm:pb-8">
+    <ThemeProvider attribute="class" defaultTheme="light" themes={['light', 'dark', 'vibrant']}>
+      <DashboardContent>
         <DashboardHeader />
         
-        <main className="container mx-auto px-4 py-6 sm:py-8">
+        <main className="container mx-auto px-4 py-6 sm:py-8 relative z-10">
           <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
               <h2 className="text-2xl sm:text-3xl font-bold mb-2">Dashboard</h2>
@@ -234,7 +251,7 @@ const Index = () => {
             </TabsContent>
           </Tabs>
         </main>
-      </div>
+      </DashboardContent>
     </ThemeProvider>
   );
 };
