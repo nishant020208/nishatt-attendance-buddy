@@ -17,23 +17,7 @@ import { Calendar, TableIcon, TrendingUp, Clock, MessageSquare, Database } from 
 import { ChatTab } from "@/components/ChatTab";
 import { TimetableCodeDialog } from "@/components/TimetableCodeDialog";
 import { SubjectManagement } from "@/components/SubjectManagement";
-import { AnimatedBackground3D } from "@/components/AnimatedBackground3D";
-import { useTheme } from "next-themes";
-
-// Dashboard content wrapper with 3D background
-const DashboardContent = ({ children }: { children: React.ReactNode }) => {
-  const { theme } = useTheme();
-  
-  return (
-    <div className="min-h-screen bg-background pb-20 sm:pb-8 relative overflow-hidden">
-      <AnimatedBackground3D variant={theme === 'vibrant' ? 'vibrant' : 'dashboard'} />
-      <div className="absolute inset-0 bg-background/70 backdrop-blur-[1px]" />
-      <div className="relative z-10">
-        {children}
-      </div>
-    </div>
-  );
-};
+import { DashboardContent } from "@/components/DashboardContent";
 
 const Index = () => {
   const navigate = useNavigate();
