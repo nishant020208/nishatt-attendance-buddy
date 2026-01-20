@@ -33,6 +33,7 @@ const Index = () => {
     addToTimetable,
     removeFromTimetable,
     markAttendance,
+    markAttendanceForDate,
     editAttendance,
     getTodayTimetable,
     getMarkedToday,
@@ -192,7 +193,7 @@ const Index = () => {
                 subjects={subjects} 
                 timetable={timetable}
                 onEditAttendance={editAttendance}
-                onMarkAttendance={markAttendance}
+                onMarkAttendanceForDate={markAttendanceForDate}
               />
             </TabsContent>
 
