@@ -11,10 +11,10 @@ interface AttendanceCalendarProps {
   subjects: Subject[];
   timetable: TimetableEntry[];
   onEditAttendance: (subjectId: string, timetableEntryId: string, date: string, newPresent: boolean | null) => void;
-  onMarkAttendance: (subjectId: string, present: boolean) => void;
+  onMarkAttendanceForDate: (subjectId: string, timetableEntryId: string, date: string, present: boolean | null) => void;
 }
 
-export const AttendanceCalendar = ({ attendanceRecords, subjects, timetable, onEditAttendance, onMarkAttendance }: AttendanceCalendarProps) => {
+export const AttendanceCalendar = ({ attendanceRecords, subjects, timetable, onEditAttendance, onMarkAttendanceForDate }: AttendanceCalendarProps) => {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -147,7 +147,7 @@ export const AttendanceCalendar = ({ attendanceRecords, subjects, timetable, onE
           timetable={timetable}
           attendanceRecords={attendanceRecords}
           onEditAttendance={onEditAttendance}
-          onMarkAttendance={onMarkAttendance}
+          onMarkAttendanceForDate={onMarkAttendanceForDate}
         />
       )}
     </Card>

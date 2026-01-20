@@ -514,6 +514,72 @@ export const useAttendance = () => {
     }
   };
 
+  const markAttendanceForDate = async (subjectId: string, timetableEntryId: string, date: string, present: boolean | null) => {
+    if (!userId) return;
+
+    try {
+      // Insert attendance record
+      const { error: insertError } = await supabase
+        .from('user_attendance')
+        .insert({
+          user_id: userId,
+          date: date,
+          subject_id: subjectId,
+          timetable_entry_id: timetableEntryId,
+          present: present === null ? false : present,
+        });
+
+      if (insertError) throw insertError;
+
+      const record: AttendanceRecord = {
+        date: date,
+        subjectId,
+        timetableEntryId,
+        present,
+      };
+
+      setAttendanceRecords([...attendanceRecords, record]);
+
+      // Update subject stats (Off doesn't count)
+      const subject = subjects.find(s => s.id === subjectId);
+      if (!subject) return;
+
+      let newAttended = subject.attended;
+      let newTotal = subject.totalClasses;
+
+      if (present !== null) {
+        newAttended = present ? subject.attended + 1 : subject.attended;
+        newTotal = subject.totalClasses + 1;
+
+        const { error: updateError } = await supabase
+          .from('user_subjects')
+          .update({
+            attended_classes: newAttended,
+            total_classes: newTotal,
+          })
+          .eq('id', subjectId)
+          .eq('user_id', userId);
+
+        if (updateError) throw updateError;
+      }
+
+      const updatedSubjects = subjects.map(s => 
+        s.id === subjectId 
+          ? { ...s, attended: newAttended, totalClasses: newTotal }
+          : s
+      );
+      setSubjects(updatedSubjects);
+
+      const statusText = present === true ? "present" : present === false ? "absent" : "off";
+      toast.success(`Attendance marked as ${statusText}`);
+    } catch (error: any) {
+      console.error('Error marking attendance for date:', error);
+      toast.error('Failed to mark attendance', {
+        description: error.message
+      });
+    }
+  };
+
   return {
     subjects,
     timetable,
@@ -523,6 +589,7 @@ export const useAttendance = () => {
     addToTimetable,
     removeFromTimetable,
     markAttendance,
+    markAttendanceForDate,
     editAttendance,
     getTodayTimetable,
     getMarkedToday,

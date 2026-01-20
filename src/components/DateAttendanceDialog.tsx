@@ -12,7 +12,7 @@ interface DateAttendanceDialogProps {
   timetable: TimetableEntry[];
   attendanceRecords: AttendanceRecord[];
   onEditAttendance: (subjectId: string, timetableEntryId: string, date: string, newPresent: boolean | null) => void;
-  onMarkAttendance: (subjectId: string, present: boolean) => void;
+  onMarkAttendanceForDate: (subjectId: string, timetableEntryId: string, date: string, present: boolean | null) => void;
 }
 
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -25,7 +25,7 @@ export const DateAttendanceDialog = ({
   timetable,
   attendanceRecords,
   onEditAttendance,
-  onMarkAttendance
+  onMarkAttendanceForDate
 }: DateAttendanceDialogProps) => {
   const dayName = DAYS[date.getDay()];
   const dateStr = format(date, "yyyy-MM-dd");
@@ -68,7 +68,8 @@ export const DateAttendanceDialog = ({
 
               const status = getStatusDisplay();
               const isMarked = !!record;
-              const canEdit = isTodayOrFuture || isMarked; // Can only mark today/future or edit past marked records
+              const isPast = dateStr < today;
+              const canMark = true; // Users can mark attendance for any date (past, today, or future)
 
               return (
                 <div
@@ -101,89 +102,70 @@ export const DateAttendanceDialog = ({
                     </div>
                   </div>
 
-                  {canEdit ? (
-                    isMarked ? (
-                      <div className="space-y-2">
-                        <p className="text-xs text-muted-foreground font-medium">Edit Attendance:</p>
-                        <div className="grid grid-cols-3 gap-2">
-                          <Button
-                            onClick={() => onEditAttendance(entry.subjectId, entry.id, dateStr, true)}
-                            className={`${
-                              record?.present === true 
-                                ? 'bg-success text-white hover:bg-success/90 border-success' 
-                                : 'border-success/30 text-success hover:bg-success/10 hover:border-success'
-                            }`}
-                            size="sm"
-                            variant={record?.present === true ? "default" : "outline"}
-                          >
-                            <CheckCircle className="h-4 w-4 mr-1.5" />
-                            Present
-                          </Button>
-                          <Button
-                            onClick={() => onEditAttendance(entry.subjectId, entry.id, dateStr, false)}
-                            className={`${
-                              record?.present === false 
-                                ? 'bg-destructive text-white hover:bg-destructive/90 border-destructive' 
-                                : 'border-destructive/30 text-destructive hover:bg-destructive/10 hover:border-destructive'
-                            }`}
-                            variant={record?.present === false ? "default" : "outline"}
-                            size="sm"
-                          >
-                            <XCircle className="h-4 w-4 mr-1.5" />
-                            Absent
-                          </Button>
-                          <Button
-                            onClick={() => onEditAttendance(entry.subjectId, entry.id, dateStr, null)}
-                            className={`${
-                              record?.present === null
-                                ? 'bg-muted text-foreground hover:bg-muted/80 border-muted' 
-                                : 'border-muted text-muted-foreground hover:bg-muted/30 hover:border-muted'
-                            }`}
-                            variant={record?.present === null ? "default" : "outline"}
-                            size="sm"
-                          >
-                            <MinusCircle className="h-4 w-4 mr-1.5" />
-                            Off
-                          </Button>
-                        </div>
+                  {canMark && (
+                    <div className="space-y-2">
+                      <p className="text-xs text-muted-foreground font-medium">
+                        {isMarked ? "Edit Attendance:" : "Mark Attendance:"}
+                      </p>
+                      <div className="grid grid-cols-3 gap-2">
+                        <Button
+                          onClick={() => {
+                            if (isMarked) {
+                              onEditAttendance(entry.subjectId, entry.id, dateStr, true);
+                            } else {
+                              onMarkAttendanceForDate(entry.subjectId, entry.id, dateStr, true);
+                            }
+                          }}
+                          className={`${
+                            record?.present === true 
+                              ? 'bg-success text-white hover:bg-success/90 border-success' 
+                              : 'border-success/30 text-success hover:bg-success/10 hover:border-success'
+                          }`}
+                          size="sm"
+                          variant={record?.present === true ? "default" : "outline"}
+                        >
+                          <CheckCircle className="h-4 w-4 mr-1.5" />
+                          Present
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            if (isMarked) {
+                              onEditAttendance(entry.subjectId, entry.id, dateStr, false);
+                            } else {
+                              onMarkAttendanceForDate(entry.subjectId, entry.id, dateStr, false);
+                            }
+                          }}
+                          className={`${
+                            record?.present === false 
+                              ? 'bg-destructive text-white hover:bg-destructive/90 border-destructive' 
+                              : 'border-destructive/30 text-destructive hover:bg-destructive/10 hover:border-destructive'
+                          }`}
+                          variant={record?.present === false ? "default" : "outline"}
+                          size="sm"
+                        >
+                          <XCircle className="h-4 w-4 mr-1.5" />
+                          Absent
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            if (isMarked) {
+                              onEditAttendance(entry.subjectId, entry.id, dateStr, null);
+                            } else {
+                              onMarkAttendanceForDate(entry.subjectId, entry.id, dateStr, null);
+                            }
+                          }}
+                          className={`${
+                            record?.present === null
+                              ? 'bg-muted text-foreground hover:bg-muted/80 border-muted' 
+                              : 'border-muted text-muted-foreground hover:bg-muted/30 hover:border-muted'
+                          }`}
+                          variant={record?.present === null ? "default" : "outline"}
+                          size="sm"
+                        >
+                          <MinusCircle className="h-4 w-4 mr-1.5" />
+                          Off
+                        </Button>
                       </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <p className="text-xs text-muted-foreground font-medium">Mark Attendance:</p>
-                        <div className="grid grid-cols-3 gap-2">
-                          <Button
-                            onClick={() => onMarkAttendance(entry.subjectId, true)}
-                            className="border-success/30 text-success hover:bg-success/10 hover:border-success"
-                            size="sm"
-                            variant="outline"
-                          >
-                            <CheckCircle className="h-4 w-4 mr-1.5" />
-                            Present
-                          </Button>
-                          <Button
-                            onClick={() => onMarkAttendance(entry.subjectId, false)}
-                            className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:border-destructive"
-                            variant="outline"
-                            size="sm"
-                          >
-                            <XCircle className="h-4 w-4 mr-1.5" />
-                            Absent
-                          </Button>
-                          <Button
-                            onClick={() => onMarkAttendance(entry.subjectId, false)}
-                            className="border-muted text-muted-foreground hover:bg-muted/30 hover:border-muted"
-                            variant="outline"
-                            size="sm"
-                          >
-                            <MinusCircle className="h-4 w-4 mr-1.5" />
-                            Off
-                          </Button>
-                        </div>
-                      </div>
-                    )
-                  ) : (
-                    <div className="text-center py-2">
-                      <p className="text-xs text-muted-foreground">Past dates cannot be marked</p>
                     </div>
                   )}
                 </div>
