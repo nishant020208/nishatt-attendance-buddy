@@ -7,6 +7,8 @@ import { OverallStats } from "@/components/OverallStats";
 import { SubjectStats } from "@/components/SubjectStats";
 import { AttendanceCalendar } from "@/components/AttendanceCalendar";
 import { AttendanceStreak } from "@/components/AttendanceStreak";
+import { AttendanceGoals } from "@/components/AttendanceGoals";
+import { WeeklyReport } from "@/components/WeeklyReport";
 import { AddSubjectDialog } from "@/components/AddSubjectDialog";
 import { TimetableView } from "@/components/TimetableView";
 import { DailyAttendance } from "@/components/DailyAttendance";
@@ -14,11 +16,12 @@ import { EmptyState } from "@/components/EmptyState";
 import { useAttendance } from "@/hooks/useAttendance";
 import { ThemeProvider } from "next-themes";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, TableIcon, TrendingUp, Clock, MessageSquare, Database } from "lucide-react";
+import { Calendar, TableIcon, TrendingUp, Clock, MessageSquare, Database, Target, FileText } from "lucide-react";
 import { ChatTab } from "@/components/ChatTab";
 import { TimetableCodeDialog } from "@/components/TimetableCodeDialog";
 import { SubjectManagement } from "@/components/SubjectManagement";
 import { DashboardContent } from "@/components/DashboardContent";
+import { toast } from "sonner";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -43,6 +46,18 @@ const Index = () => {
     loading: dataLoading,
   } = useAttendance();
 
+  // Global unhandled promise rejection handler
+  useEffect(() => {
+    const handleRejection = (event: PromiseRejectionEvent) => {
+      console.error("Unhandled rejection:", event.reason);
+      toast.error("An error occurred. Please try again.");
+      event.preventDefault();
+    };
+
+    window.addEventListener("unhandledrejection", handleRejection);
+    return () => window.removeEventListener("unhandledrejection", handleRejection);
+  }, []);
+
   useEffect(() => {
     // Check authentication
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -51,6 +66,10 @@ const Index = () => {
       if (!session) {
         navigate("/auth");
       }
+    }).catch((error) => {
+      console.error("Auth error:", error);
+      setLoading(false);
+      toast.error("Failed to check authentication");
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -129,29 +148,37 @@ const Index = () => {
           </div>
 
           <Tabs defaultValue="today" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-6 h-auto">
+            <TabsList className="grid w-full grid-cols-4 sm:grid-cols-8 h-auto gap-1">
               <TabsTrigger value="today" className="text-xs sm:text-sm py-2 sm:py-2.5">
-                <Clock className="h-4 w-4 mr-1 sm:mr-2" />
+                <Clock className="h-4 w-4 sm:mr-1" />
                 <span className="hidden sm:inline">Today</span>
               </TabsTrigger>
+              <TabsTrigger value="goals" className="text-xs sm:text-sm py-2 sm:py-2.5">
+                <Target className="h-4 w-4 sm:mr-1" />
+                <span className="hidden sm:inline">Goals</span>
+              </TabsTrigger>
+              <TabsTrigger value="report" className="text-xs sm:text-sm py-2 sm:py-2.5">
+                <FileText className="h-4 w-4 sm:mr-1" />
+                <span className="hidden sm:inline">Report</span>
+              </TabsTrigger>
               <TabsTrigger value="stats" className="text-xs sm:text-sm py-2 sm:py-2.5">
-                <TrendingUp className="h-4 w-4 mr-1 sm:mr-2" />
+                <TrendingUp className="h-4 w-4 sm:mr-1" />
                 <span className="hidden sm:inline">Stats</span>
               </TabsTrigger>
               <TabsTrigger value="timetable" className="text-xs sm:text-sm py-2 sm:py-2.5">
-                <TableIcon className="h-4 w-4 mr-1 sm:mr-2" />
+                <TableIcon className="h-4 w-4 sm:mr-1" />
                 <span className="hidden sm:inline">Timetable</span>
               </TabsTrigger>
               <TabsTrigger value="calendar" className="text-xs sm:text-sm py-2 sm:py-2.5">
-                <Calendar className="h-4 w-4 mr-1 sm:mr-2" />
+                <Calendar className="h-4 w-4 sm:mr-1" />
                 <span className="hidden sm:inline">Calendar</span>
               </TabsTrigger>
               <TabsTrigger value="subjects" className="text-xs sm:text-sm py-2 sm:py-2.5">
-                <Database className="h-4 w-4 mr-1 sm:mr-2" />
+                <Database className="h-4 w-4 sm:mr-1" />
                 <span className="hidden sm:inline">Subjects</span>
               </TabsTrigger>
               <TabsTrigger value="chat" className="text-xs sm:text-sm py-2 sm:py-2.5">
-                <MessageSquare className="h-4 w-4 mr-1 sm:mr-2" />
+                <MessageSquare className="h-4 w-4 sm:mr-1" />
                 <span className="hidden sm:inline">Chat</span>
               </TabsTrigger>
             </TabsList>
@@ -164,6 +191,21 @@ const Index = () => {
                 onMarkAttendance={markAttendance}
                 onEditAttendance={editAttendance}
                 markedToday={markedToday}
+                attendanceRecords={attendanceRecords}
+              />
+            </TabsContent>
+
+            <TabsContent value="goals" className="space-y-6">
+              <AttendanceGoals 
+                subjects={subjects}
+                overallPercentage={stats.totalPercentage}
+              />
+            </TabsContent>
+
+            <TabsContent value="report" className="space-y-6">
+              <WeeklyReport
+                subjects={subjects}
+                timetable={timetable}
                 attendanceRecords={attendanceRecords}
               />
             </TabsContent>
