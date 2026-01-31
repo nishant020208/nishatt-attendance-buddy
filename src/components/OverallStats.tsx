@@ -14,15 +14,19 @@ export const OverallStats = ({
   totalClasses,
   canMiss 
 }: OverallStatsProps) => {
+  // Ensure attended doesn't exceed total (safety check)
+  const safeAttended = Math.min(classesAttended, totalClasses);
+  const safeTotal = Math.max(totalClasses, 0);
+  const safePercentage = safeTotal > 0 ? (safeAttended / safeTotal) * 100 : totalPercentage;
   const getStatusColor = () => {
-    if (totalPercentage >= 85) return "text-success";
-    if (totalPercentage >= 75) return "text-warning";
+    if (safePercentage >= 85) return "text-success";
+    if (safePercentage >= 75) return "text-warning";
     return "text-destructive";
   };
 
   const getStatusBg = () => {
-    if (totalPercentage >= 85) return "gradient-success";
-    if (totalPercentage >= 75) return "gradient-warning";
+    if (safePercentage >= 85) return "gradient-success";
+    if (safePercentage >= 75) return "gradient-warning";
     return "bg-destructive";
   };
 
@@ -34,17 +38,17 @@ export const OverallStats = ({
           <TrendingUp className="h-5 w-5 text-primary" />
         </div>
         <div className={`text-4xl font-bold ${getStatusColor()} mb-2`}>
-          {totalPercentage.toFixed(1)}%
+          {safePercentage.toFixed(1)}%
         </div>
         <p className="text-sm text-muted-foreground">
-          {classesAttended} / {totalClasses} classes attended
+          {safeAttended} / {safeTotal} classes attended
         </p>
       </Card>
 
       <Card className="p-6 gradient-card border-0 shadow-lg hover:shadow-glow transition-all duration-300">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-medium text-muted-foreground">Classes You Can Miss</h3>
-          {totalPercentage >= 75 ? (
+          {safePercentage >= 75 ? (
             <CheckCircle className="h-5 w-5 text-success" />
           ) : (
             <AlertCircle className="h-5 w-5 text-destructive" />
@@ -65,12 +69,12 @@ export const OverallStats = ({
           <h3 className="text-sm font-medium text-white/90">Status</h3>
         </div>
         <div className="text-2xl font-bold text-white mb-2">
-          {totalPercentage >= 85 ? "Excellent!" : totalPercentage >= 75 ? "Good" : "Critical"}
+          {safePercentage >= 85 ? "Excellent!" : safePercentage >= 75 ? "Good" : "Critical"}
         </div>
         <p className="text-sm text-white/80">
-          {totalPercentage >= 85 
+          {safePercentage >= 85 
             ? "Keep up the great work!" 
-            : totalPercentage >= 75 
+            : safePercentage >= 75 
             ? "Stay consistent to maintain 75%" 
             : "Attend more classes urgently"}
         </p>
