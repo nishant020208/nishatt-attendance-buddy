@@ -261,6 +261,18 @@ export const useAttendance = () => {
 
       if (!timetableEntry) return;
 
+      // DUPLICATE PREVENTION: Check if attendance already exists for this slot
+      const existingRecord = attendanceRecords.find(
+        r => r.timetableEntryId === timetableEntry.id && r.date === today
+      );
+
+      if (existingRecord) {
+        toast.error("Attendance already marked", {
+          description: "Use the edit button to change attendance status"
+        });
+        return;
+      }
+
       // Insert attendance record
       const { error: insertError } = await supabase
         .from('user_attendance')
@@ -518,6 +530,18 @@ export const useAttendance = () => {
     if (!userId) return;
 
     try {
+      // DUPLICATE PREVENTION: Check if attendance already exists for this slot
+      const existingRecord = attendanceRecords.find(
+        r => r.timetableEntryId === timetableEntryId && r.date === date
+      );
+
+      if (existingRecord) {
+        toast.error("Attendance already marked for this slot", {
+          description: "Use the edit option to change attendance status"
+        });
+        return;
+      }
+
       // Insert attendance record
       const { error: insertError } = await supabase
         .from('user_attendance')

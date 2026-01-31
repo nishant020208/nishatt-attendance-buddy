@@ -6,6 +6,7 @@ import { DashboardHeader } from "@/components/DashboardHeader";
 import { OverallStats } from "@/components/OverallStats";
 import { SubjectStats } from "@/components/SubjectStats";
 import { AttendanceCalendar } from "@/components/AttendanceCalendar";
+import { AttendanceStreak } from "@/components/AttendanceStreak";
 import { AddSubjectDialog } from "@/components/AddSubjectDialog";
 import { TimetableView } from "@/components/TimetableView";
 import { DailyAttendance } from "@/components/DailyAttendance";
@@ -156,6 +157,7 @@ const Index = () => {
             </TabsList>
 
             <TabsContent value="today" className="space-y-6">
+              <AttendanceStreak attendanceRecords={attendanceRecords} />
               <DailyAttendance
                 subjects={subjects}
                 todayTimetable={todayTimetable}
@@ -172,7 +174,14 @@ const Index = () => {
                 {subjects
                   .filter(subject => timetable.some(t => t.subjectId === subject.id))
                   .map(subject => (
-                    <SubjectStats key={subject.id} subject={subject} />
+                    <SubjectStats 
+                      key={subject.id} 
+                      subject={subject}
+                      timetable={timetable}
+                      attendanceRecords={attendanceRecords}
+                      onEditAttendance={editAttendance}
+                      onMarkAttendanceForDate={markAttendanceForDate}
+                    />
                   ))}
               </div>
             </TabsContent>

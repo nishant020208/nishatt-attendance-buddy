@@ -1,8 +1,9 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, XCircle, MinusCircle } from "lucide-react";
+import { CheckCircle, XCircle, MinusCircle, Check } from "lucide-react";
 import { Subject, TimetableEntry, AttendanceRecord } from "@/types/attendance";
 import { format } from "date-fns";
+import { toast } from "sonner";
 
 interface DateAttendanceDialogProps {
   open: boolean;
@@ -30,8 +31,42 @@ export const DateAttendanceDialog = ({
   const dayName = DAYS[date.getDay()];
   const dateStr = format(date, "yyyy-MM-dd");
   const today = format(new Date(), "yyyy-MM-dd");
-  const isTodayOrFuture = dateStr >= today;
   const dayTimetable = timetable.filter(entry => entry.day === dayName).sort((a, b) => a.time.localeCompare(b.time));
+
+  // Check if attendance is already marked for a specific timetable entry
+  const isAlreadyMarked = (timetableEntryId: string) => {
+    return attendanceRecords.some(
+      r => r.timetableEntryId === timetableEntryId && r.date === dateStr
+    );
+  };
+
+  // Bulk mark all classes for the day
+  const handleBulkMark = async (present: boolean | null) => {
+    let markedCount = 0;
+    let skippedCount = 0;
+
+    for (const entry of dayTimetable) {
+      const subject = subjects.find(s => s.id === entry.subjectId);
+      if (!subject) continue;
+
+      const record = attendanceRecords.find(
+        r => r.timetableEntryId === entry.id && r.date === dateStr
+      );
+
+      if (record) {
+        // Edit existing record
+        onEditAttendance(entry.subjectId, entry.id, dateStr, present);
+        markedCount++;
+      } else {
+        // Mark new attendance
+        onMarkAttendanceForDate(entry.subjectId, entry.id, dateStr, present);
+        markedCount++;
+      }
+    }
+
+    const statusText = present === true ? "present" : present === false ? "absent" : "off";
+    toast.success(`Marked all ${markedCount} classes as ${statusText}`);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -45,7 +80,40 @@ export const DateAttendanceDialog = ({
           </p>
         </DialogHeader>
 
-        <div className="space-y-3 mt-6">
+        {dayTimetable.length > 0 && (
+          <div className="mb-4 p-4 rounded-lg bg-primary/5 border border-primary/20">
+            <p className="text-sm font-medium mb-3">Bulk Actions - Mark All Classes:</p>
+            <div className="grid grid-cols-3 gap-2">
+              <Button
+                onClick={() => handleBulkMark(true)}
+                className="bg-success hover:bg-success/90 text-white"
+                size="sm"
+              >
+                <CheckCircle className="h-4 w-4 mr-1.5" />
+                All Present
+              </Button>
+              <Button
+                onClick={() => handleBulkMark(false)}
+                className="bg-destructive hover:bg-destructive/90 text-white"
+                size="sm"
+              >
+                <XCircle className="h-4 w-4 mr-1.5" />
+                All Absent
+              </Button>
+              <Button
+                onClick={() => handleBulkMark(null)}
+                className="bg-muted hover:bg-muted/80"
+                size="sm"
+                variant="outline"
+              >
+                <MinusCircle className="h-4 w-4 mr-1.5" />
+                All Off
+              </Button>
+            </div>
+          </div>
+        )}
+
+        <div className="space-y-3">
           {dayTimetable.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground text-sm">No classes scheduled for this day</p>
@@ -53,7 +121,7 @@ export const DateAttendanceDialog = ({
           ) : (
             dayTimetable.map(entry => {
               const subject = subjects.find(s => s.id === entry.subjectId);
-              if (!subject) return null; // Only show subjects that exist
+              if (!subject) return null;
               
               const record = attendanceRecords.find(
                 r => r.timetableEntryId === entry.id && r.date === dateStr
@@ -68,8 +136,6 @@ export const DateAttendanceDialog = ({
 
               const status = getStatusDisplay();
               const isMarked = !!record;
-              const isPast = dateStr < today;
-              const canMark = true; // Users can mark attendance for any date (past, today, or future)
 
               return (
                 <div
@@ -102,72 +168,70 @@ export const DateAttendanceDialog = ({
                     </div>
                   </div>
 
-                  {canMark && (
-                    <div className="space-y-2">
-                      <p className="text-xs text-muted-foreground font-medium">
-                        {isMarked ? "Edit Attendance:" : "Mark Attendance:"}
-                      </p>
-                      <div className="grid grid-cols-3 gap-2">
-                        <Button
-                          onClick={() => {
-                            if (isMarked) {
-                              onEditAttendance(entry.subjectId, entry.id, dateStr, true);
-                            } else {
-                              onMarkAttendanceForDate(entry.subjectId, entry.id, dateStr, true);
-                            }
-                          }}
-                          className={`${
-                            record?.present === true 
-                              ? 'bg-success text-white hover:bg-success/90 border-success' 
-                              : 'border-success/30 text-success hover:bg-success/10 hover:border-success'
-                          }`}
-                          size="sm"
-                          variant={record?.present === true ? "default" : "outline"}
-                        >
-                          <CheckCircle className="h-4 w-4 mr-1.5" />
-                          Present
-                        </Button>
-                        <Button
-                          onClick={() => {
-                            if (isMarked) {
-                              onEditAttendance(entry.subjectId, entry.id, dateStr, false);
-                            } else {
-                              onMarkAttendanceForDate(entry.subjectId, entry.id, dateStr, false);
-                            }
-                          }}
-                          className={`${
-                            record?.present === false 
-                              ? 'bg-destructive text-white hover:bg-destructive/90 border-destructive' 
-                              : 'border-destructive/30 text-destructive hover:bg-destructive/10 hover:border-destructive'
-                          }`}
-                          variant={record?.present === false ? "default" : "outline"}
-                          size="sm"
-                        >
-                          <XCircle className="h-4 w-4 mr-1.5" />
-                          Absent
-                        </Button>
-                        <Button
-                          onClick={() => {
-                            if (isMarked) {
-                              onEditAttendance(entry.subjectId, entry.id, dateStr, null);
-                            } else {
-                              onMarkAttendanceForDate(entry.subjectId, entry.id, dateStr, null);
-                            }
-                          }}
-                          className={`${
-                            record?.present === null
-                              ? 'bg-muted text-foreground hover:bg-muted/80 border-muted' 
-                              : 'border-muted text-muted-foreground hover:bg-muted/30 hover:border-muted'
-                          }`}
-                          variant={record?.present === null ? "default" : "outline"}
-                          size="sm"
-                        >
-                          <MinusCircle className="h-4 w-4 mr-1.5" />
-                          Off
-                        </Button>
-                      </div>
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground font-medium">
+                      {isMarked ? "Edit Attendance:" : "Mark Attendance:"}
+                    </p>
+                    <div className="grid grid-cols-3 gap-2">
+                      <Button
+                        onClick={() => {
+                          if (isMarked) {
+                            onEditAttendance(entry.subjectId, entry.id, dateStr, true);
+                          } else {
+                            onMarkAttendanceForDate(entry.subjectId, entry.id, dateStr, true);
+                          }
+                        }}
+                        className={`${
+                          record?.present === true 
+                            ? 'bg-success text-white hover:bg-success/90 border-success' 
+                            : 'border-success/30 text-success hover:bg-success/10 hover:border-success'
+                        }`}
+                        size="sm"
+                        variant={record?.present === true ? "default" : "outline"}
+                      >
+                        <CheckCircle className="h-4 w-4 mr-1.5" />
+                        Present
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          if (isMarked) {
+                            onEditAttendance(entry.subjectId, entry.id, dateStr, false);
+                          } else {
+                            onMarkAttendanceForDate(entry.subjectId, entry.id, dateStr, false);
+                          }
+                        }}
+                        className={`${
+                          record?.present === false 
+                            ? 'bg-destructive text-white hover:bg-destructive/90 border-destructive' 
+                            : 'border-destructive/30 text-destructive hover:bg-destructive/10 hover:border-destructive'
+                        }`}
+                        variant={record?.present === false ? "default" : "outline"}
+                        size="sm"
+                      >
+                        <XCircle className="h-4 w-4 mr-1.5" />
+                        Absent
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          if (isMarked) {
+                            onEditAttendance(entry.subjectId, entry.id, dateStr, null);
+                          } else {
+                            onMarkAttendanceForDate(entry.subjectId, entry.id, dateStr, null);
+                          }
+                        }}
+                        className={`${
+                          record?.present === null
+                            ? 'bg-muted text-foreground hover:bg-muted/80 border-muted' 
+                            : 'border-muted text-muted-foreground hover:bg-muted/30 hover:border-muted'
+                        }`}
+                        variant={record?.present === null ? "default" : "outline"}
+                        size="sm"
+                      >
+                        <MinusCircle className="h-4 w-4 mr-1.5" />
+                        Off
+                      </Button>
                     </div>
-                  )}
+                  </div>
                 </div>
               );
             })
