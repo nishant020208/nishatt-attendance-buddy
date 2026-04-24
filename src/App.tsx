@@ -12,27 +12,7 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 const queryClient = new QueryClient();
 
 const App = () => {
-  useEffect(() => {
-    const hideBadge = () => {
-      const selectors = [
-        '[data-lovable-badge]',
-        'a[href*="lovable"]',
-        'iframe[src*="lovable"]'
-      ];
 
-      selectors.forEach(selector => {
-        document.querySelectorAll(selector).forEach(el => {
-          (el as HTMLElement).style.display = 'none';
-        });
-      });
-    };
-
-    hideBadge();
-    const observer = new MutationObserver(hideBadge);
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    return () => observer.disconnect();
-  }, []);
 
   return (
     <ErrorBoundary>

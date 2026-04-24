@@ -1,73 +1,45 @@
-# Welcome to your Lovable project
+# Attendance Buddy
 
-## Project info
+A lightweight, modern attendance tracking app designed for students. Stay on top of your schedule, monitor your attendance percentages, and never miss a goal.
 
-**URL**: https://lovable.dev/projects/d24ab5bc-1dc9-42e0-b7c6-e29243cb10e9
+## Features
 
-## How can I edit this code?
+- **Timetable Management**: Organize your weekly schedule effortlessly.
+- **Quick Attendance**: Mark presence or absence for today's classes with one click.
+- **Smart Insights**: Automatically calculate how many classes you can afford to miss while staying above your target (e.g., 75%).
+- **Interactive Stats**: View subject-wise breakdowns and overall performance.
+- **Cross-Platform**: Built with Capacitor for a seamless experience on Web, Android, and iOS.
+- **Data Sync**: Powered by Supabase for real-time updates and secure authentication.
 
-There are several ways of editing your application.
+## Tech Stack
 
-**Use Lovable**
+- **UI/UX**: React, Tailwind CSS, shadcn/ui, Framer Motion
+- **Core**: TypeScript, Vite
+- **Backend**: Supabase (Database & Auth)
+- **Mobile**: Capacitor
+- **Charts**: Recharts
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/d24ab5bc-1dc9-42e0-b7c6-e29243cb10e9) and start prompting.
+## Setup
 
-Changes made via Lovable will be committed automatically to this repo.
+1. **Clone the repository**:
+   ```bash
+   git clone <repository-url>
+   cd attendance-buddy
+   ```
 
-**Use your preferred IDE**
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+3. **Environment Variables**:
+   Create a `.env` file and add your Supabase credentials:
+   ```env
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/d24ab5bc-1dc9-42e0-b7c6-e29243cb10e9) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+4. **Launch**:
+   ```bash
+   npm run dev
+   ```

@@ -46,7 +46,7 @@ const Index = () => {
     loading: dataLoading,
   } = useAttendance();
 
-  // Global unhandled promise rejection handler
+
   useEffect(() => {
     const handleRejection = (event: PromiseRejectionEvent) => {
       console.error("Unhandled rejection:", event.reason);
@@ -59,7 +59,7 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
-    // Check authentication
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);

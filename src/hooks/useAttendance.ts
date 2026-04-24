@@ -11,7 +11,7 @@ export const useAttendance = () => {
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
 
-  // Fetch all data from Supabase
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -23,7 +23,7 @@ export const useAttendance = () => {
         
         setUserId(user.id);
 
-        // Fetch subjects
+
         const { data: subjectsData, error: subjectsError } = await supabase
           .from('user_subjects')
           .select('*')
@@ -41,7 +41,7 @@ export const useAttendance = () => {
         }));
         setSubjects(mappedSubjects);
 
-        // Fetch timetable
+
         const { data: timetableData, error: timetableError } = await supabase
           .from('user_timetable')
           .select('*')
@@ -58,7 +58,7 @@ export const useAttendance = () => {
         }));
         setTimetable(mappedTimetable);
 
-        // Fetch attendance records
+
         const { data: attendanceData, error: attendanceError } = await supabase
           .from('user_attendance')
           .select('*')
@@ -75,7 +75,7 @@ export const useAttendance = () => {
         }));
         setAttendanceRecords(mappedAttendance);
 
-        // Clear old localStorage data (migration cleanup)
+
         localStorage.removeItem('nishatt_subjects');
         localStorage.removeItem('nishatt_timetable');
         localStorage.removeItem('nishatt_attendance');
@@ -97,7 +97,7 @@ export const useAttendance = () => {
     if (!userId) return;
 
     try {
-      // Delete subject (cascade will handle timetable and attendance)
+
       const { error } = await supabase
         .from('user_subjects')
         .delete()
@@ -206,12 +206,12 @@ export const useAttendance = () => {
       const updated = timetable.filter(entry => entry.id !== id);
       setTimetable(updated);
 
-      // Check if this was the last timetable entry for this subject
+
       if (entry) {
         const hasOtherEntries = updated.some(e => e.subjectId === entry.subjectId);
         
         if (!hasOtherEntries) {
-          // Remove all attendance records for this subject
+
           await supabase
             .from('user_attendance')
             .delete()
@@ -221,7 +221,7 @@ export const useAttendance = () => {
           const updatedRecords = attendanceRecords.filter(r => r.subjectId !== entry.subjectId);
           setAttendanceRecords(updatedRecords);
 
-          // Reset subject attendance
+
           await supabase
             .from('user_subjects')
             .update({
@@ -261,7 +261,7 @@ export const useAttendance = () => {
 
       if (!timetableEntry) return;
 
-      // DUPLICATE PREVENTION: Check if attendance already exists for this slot
+
       const existingRecord = attendanceRecords.find(
         r => r.timetableEntryId === timetableEntry.id && r.date === today
       );
@@ -273,7 +273,7 @@ export const useAttendance = () => {
         return;
       }
 
-      // Insert attendance record
+
       const { error: insertError } = await supabase
         .from('user_attendance')
         .insert({
@@ -295,7 +295,7 @@ export const useAttendance = () => {
 
       setAttendanceRecords([...attendanceRecords, record]);
 
-      // Update subject stats
+
       const subject = subjects.find(s => s.id === subjectId);
       if (!subject) return;
 
@@ -328,7 +328,7 @@ export const useAttendance = () => {
       );
       setSubjects(updatedSubjects);
 
-      // Toast notifications
+
       if (present === true) {
         const percentage = newTotal > 0
           ? ((newAttended / newTotal) * 100).toFixed(1)
@@ -457,7 +457,7 @@ export const useAttendance = () => {
 
       const oldPresent = attendanceRecords[recordIndex].present;
 
-      // Update attendance record in database
+
       const { error: updateError } = await supabase
         .from('user_attendance')
         .update({ present: newPresent === null ? false : newPresent })
@@ -472,7 +472,7 @@ export const useAttendance = () => {
       updatedRecords[recordIndex] = { ...updatedRecords[recordIndex], present: newPresent };
       setAttendanceRecords(updatedRecords);
 
-      // Calculate new stats
+
       const subject = subjects.find(s => s.id === subjectId);
       if (!subject) return;
 
@@ -497,7 +497,7 @@ export const useAttendance = () => {
         attended++;
       }
 
-      // Update subject stats in database
+
       const { error: subjectError } = await supabase
         .from('user_subjects')
         .update({
@@ -530,7 +530,7 @@ export const useAttendance = () => {
     if (!userId) return;
 
     try {
-      // DUPLICATE PREVENTION: Check if attendance already exists for this slot
+
       const existingRecord = attendanceRecords.find(
         r => r.timetableEntryId === timetableEntryId && r.date === date
       );
@@ -542,7 +542,7 @@ export const useAttendance = () => {
         return;
       }
 
-      // Insert attendance record
+
       const { error: insertError } = await supabase
         .from('user_attendance')
         .insert({
@@ -564,7 +564,7 @@ export const useAttendance = () => {
 
       setAttendanceRecords([...attendanceRecords, record]);
 
-      // Update subject stats (Off doesn't count)
+
       const subject = subjects.find(s => s.id === subjectId);
       if (!subject) return;
 
