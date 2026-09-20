@@ -45,7 +45,7 @@ export const SubjectStats = ({
   // Calculate how many classes can miss while maintaining 75%
   let canMiss = 0;
   if (percentage >= 75 && safeTotalClasses > 0) {
-    let testAttended = safeAttended;
+    const testAttended = safeAttended;
     let testTotal = safeTotalClasses;
     
     while ((testAttended / (testTotal + 1)) * 100 >= 75) {
