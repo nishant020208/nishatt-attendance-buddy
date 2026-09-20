@@ -95,9 +95,11 @@ export const DailyAttendance = ({ subjects, todayTimetable, onMarkAttendance, on
                   <div className="flex gap-2">
                     <Button
                       onClick={() => {
-                        isMarked 
-                          ? onEditAttendance(entry.subjectId, entry.id, todayDate, true)
-                          : onMarkAttendance(entry.subjectId, true);
+                        if (isMarked) {
+                          onEditAttendance(entry.subjectId, entry.id, todayDate, true);
+                        } else {
+                          onMarkAttendance(entry.subjectId, true);
+                        }
                         setEditingId(null);
                       }}
                       className={`flex-1 sm:flex-none ${
@@ -113,9 +115,11 @@ export const DailyAttendance = ({ subjects, todayTimetable, onMarkAttendance, on
                     </Button>
                     <Button
                       onClick={() => {
-                        isMarked 
-                          ? onEditAttendance(entry.subjectId, entry.id, todayDate, false)
-                          : onMarkAttendance(entry.subjectId, false);
+                        if (isMarked) {
+                          onEditAttendance(entry.subjectId, entry.id, todayDate, false);
+                        } else {
+                          onMarkAttendance(entry.subjectId, false);
+                        }
                         setEditingId(null);
                       }}
                       className={`flex-1 sm:flex-none ${
@@ -131,9 +135,11 @@ export const DailyAttendance = ({ subjects, todayTimetable, onMarkAttendance, on
                     </Button>
                     <Button
                       onClick={() => {
-                        isMarked 
-                          ? onEditAttendance(entry.subjectId, entry.id, todayDate, null)
-                          : onMarkAttendance(entry.subjectId, false);
+                        if (isMarked) {
+                          onEditAttendance(entry.subjectId, entry.id, todayDate, null);
+                        } else {
+                          onMarkAttendance(entry.subjectId, false);
+                        }
                         setEditingId(null);
                       }}
                       className={`flex-1 sm:flex-none ${
