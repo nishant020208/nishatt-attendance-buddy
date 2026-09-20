@@ -1,0 +1,28 @@
+# Nishatt Attendance Buddy
+
+> Smart attendance tracker and timetable companion for university and college students.
+
+Nishatt Attendance Buddy helps students stay above required attendance thresholds (such as the 75% minimum attendance rule), optimize schedules, track daily lectures, and plan excused leaves with real-time statistics.
+
+## Core Capabilities
+
+- **Daily Attendance Logging**: One-tap marking for present, absent, or cancelled lecture slots.
+- **75% Attendance Planner**: Real-time calculation of safe leaves and classes needed to reach target percentage.
+- **Weekly Timetable Management**: Interactive schedule builder with timetable sharing codes and image upload OCR extraction.
+- **Visual Analytics**: Interactive attendance calendars, subject-wise trends, and weekly summaries.
+- **Cross-Platform**: Responsive Web application with progressive Capacitor support for iOS and Android.
+- **Privacy & Security**: Secure user authentication and encrypted persistence via Supabase.
+
+## Public Endpoints & Routes
+
+- `/`: Student Dashboard, schedule view, subject manager, and analytics reports.
+- `/auth`: Student portal authentication (Sign in, Sign up, Password recovery).
+- `/privacy`: Data handling and student privacy disclosures.
+- `/terms`: Terms of service and usage guidelines.
+- `/sitemap.xml`: XML sitemap for indexing search engines.
+
+## Technical Architecture
+
+- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui components, Framer Motion animations.
+- **State & Data**: TanStack Query, Supabase client with real-time synchronization.
+- **Branding**: Nishatt Attendance Buddy (https://attendance.nishatt.com).
