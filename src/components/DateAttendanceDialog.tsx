@@ -43,7 +43,6 @@ export const DateAttendanceDialog = ({
   // Bulk mark all classes for the day
   const handleBulkMark = async (present: boolean | null) => {
     let markedCount = 0;
-    let skippedCount = 0;
 
     for (const entry of dayTimetable) {
       const subject = subjects.find(s => s.id === entry.subjectId);
