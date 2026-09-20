@@ -1,11 +1,11 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.d24ab5bc1dc942e0b7c6e29243cb10e9',
+  appId: 'com.nishatt.attendancebuddy',
   appName: 'nishatt-attendance-buddy',
   webDir: 'dist',
   server: {
-    url: 'https://d24ab5bc-1dc9-42e0-b7c6-e29243cb10e9.lovableproject.com?forceHideBadge=true',
+    url: 'https://attendance.nishatt.com',
     cleartext: true
   },
   bundledWebRuntime: false
