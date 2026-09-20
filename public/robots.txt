@@ -1,14 +1,9 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
+# Nishatt Attendance Buddy - Robots Configuration
 User-agent: *
 Allow: /
+
+# Disallow API internal endpoints or auth redirect callbacks if applicable
+Disallow: /auth/v1/
+
+# Sitemap location
+Sitemap: https://attendance.nishatt.com/sitemap.xml
