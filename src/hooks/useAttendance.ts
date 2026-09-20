@@ -387,7 +387,7 @@ export const useAttendance = () => {
 
     let canMiss = 0;
     if (percentage >= 75 && totalClasses > 0) {
-      let testAttended = totalAttended;
+      const testAttended = totalAttended;
       let testTotal = totalClasses;
       
       while ((testAttended / (testTotal + 1)) * 100 >= 75) {
