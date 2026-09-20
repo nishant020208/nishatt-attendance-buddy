@@ -11,6 +11,9 @@ import { Calendar, LogIn, UserPlus, KeyRound, ArrowLeft, Eye, EyeOff, Sparkles }
 import { z } from "zod";
 import { AnimatedBackground3D } from "@/components/AnimatedBackground3D";
 import { motion, AnimatePresence } from "framer-motion";
+import { SEO } from "@/components/SEO";
+import { PageBreadcrumb } from "@/components/PageBreadcrumb";
+import { Link } from "react-router-dom";
 
 const authSchema = z.object({
   email: z.string().email('Invalid email address').max(255, 'Email too long'),
@@ -252,12 +255,21 @@ export const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 overflow-hidden relative">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 overflow-hidden relative">
+      <SEO
+        title="Student Portal Sign In & Registration"
+        description="Access your Nishatt Attendance Buddy account to track classes, manage timetable, and hit attendance goals."
+        canonical="/auth"
+      />
       <AnimatedBackground3D variant="auth" />
       
       {/* Gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-background/80 via-background/60 to-background/80 backdrop-blur-[2px]" />
       
+      <div className="relative z-20 w-full max-w-md mb-3">
+        <PageBreadcrumb items={[{ label: "Student Portal" }]} />
+      </div>
+
       <AnimatePresence mode="wait">
         <motion.div
           key={mode}
@@ -288,13 +300,15 @@ export const Auth = () => {
                   </div>
                 </motion.div>
                 <div>
-                  <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-                    Nishatt
-                  </CardTitle>
+                  <h1 className="text-3xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+                    Student Portal
+                  </h1>
                   <CardDescription className="text-base mt-2 text-muted-foreground/80">
                     {mode === 'forgot' 
                       ? 'Reset your password' 
-                      : 'Track your attendance with style'}
+                      : mode === 'signup'
+                      ? 'Create an account to start tracking attendance'
+                      : 'Sign in to manage your schedule and attendance'}
                   </CardDescription>
                 </div>
               </CardHeader>
@@ -567,6 +581,19 @@ export const Auth = () => {
               </CardContent>
             </div>
           </Card>
+          <div className="mt-4 text-center text-xs text-muted-foreground flex items-center justify-center gap-4">
+            <Link to="/" className="hover:text-foreground transition-colors underline">
+              Home
+            </Link>
+            <span>•</span>
+            <Link to="/privacy" className="hover:text-foreground transition-colors underline">
+              Privacy Policy
+            </Link>
+            <span>•</span>
+            <Link to="/terms" className="hover:text-foreground transition-colors underline">
+              Terms
+            </Link>
+          </div>
         </motion.div>
       </AnimatePresence>
     </div>
