@@ -2,6 +2,15 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      (function(){
+        var redirect = sessionStorage.redirect;
+        delete sessionStorage.redirect;
+        if (redirect && redirect !== location.href) {
+          history.replaceState(null, null, redirect);
+        }
+      })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
     <title>Nishatt Attendance Buddy - Smart Student Attendance Tracker</title>
     <meta name="description" content="Intelligent attendance tracking system for college and university students. Monitor daily lectures, calculate safe leaves to stay above 75%, and manage weekly timetables with analytics." />
