@@ -22,6 +22,9 @@ import { TimetableCodeDialog } from "@/components/TimetableCodeDialog";
 import { SubjectManagement } from "@/components/SubjectManagement";
 import { DashboardContent } from "@/components/DashboardContent";
 import { toast } from "sonner";
+import { SEO } from "@/components/SEO";
+import { PageBreadcrumb } from "@/components/PageBreadcrumb";
+import { Link } from "react-router-dom";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -49,7 +52,7 @@ const Index = () => {
 
   useEffect(() => {
     const handleRejection = (event: PromiseRejectionEvent) => {
-      console.error("Unhandled rejection:", event.reason);
+      console.warn("Unhandled rejection caught:", event.reason);
       toast.error("An error occurred. Please try again.");
       event.preventDefault();
     };
@@ -106,12 +109,18 @@ const Index = () => {
   if (subjects.length === 0) {
     return (
       <ThemeProvider attribute="class" defaultTheme="light" themes={['light', 'dark', 'vibrant']}>
+        <SEO
+          title="Get Started | Student Attendance Companion"
+          description="Create your subjects, import timetables, and begin tracking class attendance to stay above the 75% threshold."
+          canonical="/"
+        />
         <DashboardContent>
           <DashboardHeader />
-          <main className="container mx-auto px-4 py-8 relative z-10">
+          <main className="container mx-auto px-4 py-6 sm:py-8 relative z-10">
+            <PageBreadcrumb items={[{ label: "Get Started" }]} />
             <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
-                <h2 className="text-2xl sm:text-3xl font-bold mb-2">Get Started</h2>
+                <h1 className="text-2xl sm:text-3xl font-bold mb-2">Get Started with Nishatt Attendance</h1>
                 <p className="text-sm sm:text-base text-muted-foreground">
                   Add your first subject or import a timetable to begin tracking
                 </p>
@@ -130,15 +139,21 @@ const Index = () => {
 
   return (
     <ThemeProvider attribute="class" defaultTheme="light" themes={['light', 'dark', 'vibrant']}>
+      <SEO
+        title="Student Attendance Dashboard"
+        description="Monitor attendance percentage, calculate classes you can afford to miss, and view weekly timetable statistics."
+        canonical="/"
+      />
       <DashboardContent>
         <DashboardHeader />
         
         <main className="container mx-auto px-4 py-6 sm:py-8 relative z-10">
+          <PageBreadcrumb items={[{ label: "Dashboard" }]} />
           <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h2 className="text-2xl sm:text-3xl font-bold mb-2">Dashboard</h2>
+              <h1 className="text-2xl sm:text-3xl font-bold mb-2">Student Attendance Dashboard</h1>
               <p className="text-sm sm:text-base text-muted-foreground">
-                Track your attendance and stay motivated
+                Track your attendance, manage daily lectures, and stay motivated
               </p>
             </div>
             <div className="flex gap-2">
@@ -286,6 +301,22 @@ const Index = () => {
               />
             </TabsContent>
           </Tabs>
+
+          <footer className="mt-12 pt-6 border-t border-border/40 text-center text-xs text-muted-foreground flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p>&copy; {new Date().getFullYear()} Nishatt Attendance Buddy. All rights reserved.</p>
+            <div className="flex items-center gap-4">
+              <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
+              <Link to="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link>
+              <a 
+                href="https://github.com/nishant020208/nishatt-attendance-buddy" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="hover:text-foreground transition-colors"
+              >
+                GitHub Source
+              </a>
+            </div>
+          </footer>
         </main>
       </DashboardContent>
     </ThemeProvider>
