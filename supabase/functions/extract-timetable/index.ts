@@ -66,12 +66,13 @@ serve(async (req) => {
       timestamp: Date.now()
     });
 
-    const apiKey = Deno.env.get('AI_API_KEY') || Deno.env.get('LOVABLE_API_KEY');
+    const apiKey = Deno.env.get('AI_API_KEY') || Deno.env.get('OPENAI_API_KEY');
     if (!apiKey) {
       throw new Error('AI API key is not configured');
     }
 
-    const gatewayUrl = Deno.env.get('AI_GATEWAY_URL') || "https://ai.gateway.lovable.dev/v1/chat/completions";
+    const gatewayUrl = Deno.env.get('AI_GATEWAY_URL') || "https://api.openai.com/v1/chat/completions";
+    const model = Deno.env.get('AI_VISION_MODEL') || Deno.env.get('AI_MODEL') || "gpt-4o";
 
     const response = await fetch(gatewayUrl, {
       method: "POST",
@@ -80,7 +81,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-pro",
+        model: model,
         messages: [
           {
             role: "user",
@@ -190,7 +191,7 @@ Please analyze the image thoroughly and extract EVERYTHING you can see.`
       }
       if (response.status === 402) {
         return new Response(
-          JSON.stringify({ error: "Payment required. Please add credits to your workspace." }),
+          JSON.stringify({ error: "Insufficient quota or payment required for AI provider." }),
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
