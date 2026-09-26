@@ -80,10 +80,10 @@ export const useAttendance = () => {
         localStorage.removeItem('nishatt_timetable');
         localStorage.removeItem('nishatt_attendance');
         
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Error fetching data:', error);
         toast.error('Failed to load data', {
-          description: error.message
+          description: error instanceof Error ? error.message : 'Unknown error'
         });
       } finally {
         setLoading(false);
@@ -111,10 +111,10 @@ export const useAttendance = () => {
       setAttendanceRecords(attendanceRecords.filter(r => r.subjectId !== id));
       
       toast.success('Subject deleted successfully');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error deleting subject:', error);
       toast.error('Failed to delete subject', {
-        description: error.message
+        description: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   };
@@ -147,10 +147,10 @@ export const useAttendance = () => {
 
       setSubjects([...subjects, newSubject]);
       toast.success('Subject added successfully');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error adding subject:', error);
       toast.error('Failed to add subject', {
-        description: error.message
+        description: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   };
@@ -181,10 +181,10 @@ export const useAttendance = () => {
 
       setTimetable([...timetable, newEntry]);
       toast.success("Added to timetable!");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error adding to timetable:', error);
       toast.error('Failed to add to timetable', {
-        description: error.message
+        description: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   };
@@ -241,10 +241,10 @@ export const useAttendance = () => {
       }
 
       toast.success("Removed from timetable");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error removing from timetable:', error);
       toast.error('Failed to remove from timetable', {
-        description: error.message
+        description: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   };
@@ -360,10 +360,10 @@ export const useAttendance = () => {
           description: "Not counted in attendance stats",
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error marking attendance:', error);
       toast.error('Failed to mark attendance', {
-        description: error.message
+        description: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   };
@@ -437,10 +437,10 @@ export const useAttendance = () => {
 
       setTimetable([...timetable, ...mappedEntries]);
       toast.success('Timetable imported successfully');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error importing timetable:', error);
       toast.error('Failed to import timetable', {
-        description: error.message
+        description: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   };
@@ -518,10 +518,10 @@ export const useAttendance = () => {
       
       const statusText = newPresent === true ? "present" : newPresent === false ? "absent" : "off";
       toast.success(`Attendance marked as ${statusText}`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error editing attendance:', error);
       toast.error('Failed to edit attendance', {
-        description: error.message
+        description: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   };
@@ -596,10 +596,10 @@ export const useAttendance = () => {
 
       const statusText = present === true ? "present" : present === false ? "absent" : "off";
       toast.success(`Attendance marked as ${statusText}`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error marking attendance for date:', error);
       toast.error('Failed to mark attendance', {
-        description: error.message
+        description: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   };

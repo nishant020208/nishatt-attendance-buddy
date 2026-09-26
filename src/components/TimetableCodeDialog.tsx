@@ -6,10 +6,11 @@ import { Label } from "@/components/ui/label";
 import { Share2, Download, Copy, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { TimetableEntry } from "@/types/attendance";
 
 interface TimetableCodeDialogProps {
-  timetable: any[];
-  onImportTimetable: (timetable: any[]) => void;
+  timetable: TimetableEntry[];
+  onImportTimetable: (timetable: TimetableEntry[]) => void;
 }
 
 export const TimetableCodeDialog = ({ timetable, onImportTimetable }: TimetableCodeDialogProps) => {

@@ -7,6 +7,8 @@ import { Send, Bot, User, ImagePlus, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
+import { Subject, TimetableEntry } from "@/types/attendance";
+
 interface Message {
   role: 'user' | 'assistant';
   content: string;
@@ -14,8 +16,8 @@ interface Message {
 }
 
 interface ChatTabProps {
-  subjects: any[];
-  timetable: any[];
+  subjects: Subject[];
+  timetable: TimetableEntry[];
   onSubjectsExtracted: (subjects: { name: string; code: string }[]) => void;
   onTimetableExtracted: (entries: { day: string; subjectCode: string; time: string }[]) => void;
 }

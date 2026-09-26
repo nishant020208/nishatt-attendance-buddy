@@ -114,10 +114,10 @@ export const Auth = () => {
         setPassword("");
         setConfirmPassword("");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error",
-        description: error.message || "Failed to create account",
+        description: error instanceof Error ? error.message : "Failed to create account",
         variant: "destructive"
       });
     } finally {
@@ -170,10 +170,10 @@ export const Auth = () => {
           description: "You've been signed in successfully.",
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error",
-        description: error.message || "Failed to sign in",
+        description: error instanceof Error ? error.message : "Failed to sign in",
         variant: "destructive"
       });
     } finally {
@@ -218,10 +218,10 @@ export const Auth = () => {
         description: "We've sent you a password reset link.",
       });
       setMode('signin');
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error",
-        description: error.message || "Failed to send reset email",
+        description: error instanceof Error ? error.message : "Failed to send reset email",
         variant: "destructive"
       });
     } finally {
