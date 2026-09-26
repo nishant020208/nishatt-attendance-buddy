@@ -16,16 +16,27 @@ export default defineConfig({
   },
   build: {
     sourcemap: false,
-    chunkSizeWarningLimit: 700,
+    chunkSizeWarningLimit: 750,
     rollupOptions: {
       output: {
-        manualChunks: {
-          "vendor-react": ["react", "react-dom", "react-router-dom"],
-          "vendor-three-core": ["three"],
-          "vendor-three-fiber": ["@react-three/fiber", "@react-three/drei"],
-          "vendor-charts": ["recharts"],
-          "vendor-ui": ["framer-motion", "lucide-react", "date-fns"],
-          "vendor-supabase": ["@supabase/supabase-js"],
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (id.includes("three") || id.includes("@react-three")) {
+              return "vendor-three";
+            }
+            if (id.includes("recharts")) {
+              return "vendor-charts";
+            }
+            if (id.includes("@supabase")) {
+              return "vendor-supabase";
+            }
+            if (id.includes("react") || id.includes("react-dom") || id.includes("react-router")) {
+              return "vendor-react";
+            }
+            if (id.includes("framer-motion") || id.includes("lucide-react")) {
+              return "vendor-ui";
+            }
+          }
         },
       },
     },
